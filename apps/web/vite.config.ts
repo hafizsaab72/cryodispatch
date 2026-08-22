@@ -7,7 +7,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
       "@cryodispatch/shared": path.resolve(__dirname, "../../packages/shared/src/index.ts"),
     },
   },

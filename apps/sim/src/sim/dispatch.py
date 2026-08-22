@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from sim.hospital import ASSETS, AssetSpec
 
 
@@ -15,7 +13,7 @@ def distance_m(a: AssetSpec, b: AssetSpec) -> float:
 def same_band(src: AssetSpec, dst: AssetSpec) -> bool:
     if not src.band or not dst.band:
         return False
-    # blood can go to walk-in if walk-in is 2-8 and we accept 2-6 product
+    # Blood may overflow into a 2–8°C walk-in; the product band (2–6) still governs.
     if src.asset_class == "blood_rbc" and dst.asset_class in {"blood_rbc", "walkin_cold"}:
         return True
     if src.asset_class in {"vaccine_ilr", "insulin_ilr"} and dst.asset_class in {"vaccine_ilr", "insulin_ilr", "walkin_cold"}:
@@ -31,39 +29,30 @@ def cert_for(asset_class: str) -> str:
     return "maintenance"
 
 
-@dataclass
-class DispatchMove:
-    from_asset: str
-    to_asset: str
-    unit_ids: list[str]
-    staff_id: str
-    staff_name: str
-    distance_m: float
-    eta_min: float
-    kwh_hold_30m: float
-    kwh_move: float
-    cascade: bool
-    ticket_parts: str = "start-relay, run-cap"
-
-
 def kwh_hold(health: float) -> float:
-    # sick compressor drawing ~1.1 kW at high duty for 0.5 h
+    """Energy to keep a degraded compressor running for 30 minutes."""
     duty = 0.55 + 0.4 * (1.0 - health)
     return round(1.1 * duty * 0.5, 3)
 
 
 def kwh_move() -> float:
-    return 0.22  # door-open load + dest extra
+    """Door-open load at both ends plus destination pull-down."""
+    return 0.22
 
 
-def cascade_risk(dst_id: str, reserved: dict[str, float], remaining: dict[str, float], other_need_l: float) -> float:
-    """1.0 if this dest is the only overflow left for another failing vault."""
-    free = remaining.get(dst_id, 0.0) - reserved.get(dst_id, 0.0)
-    if free < other_need_l:
+def cascade_risk(free_after_l: float, other_need_l: float) -> float:
+    """How badly this destination would block a second failing vault.
+
+    1.0 when taking this move would leave too little headroom for the next
+    vault at risk. Explainable on stage: we prefer a backup that can absorb
+    two failures over one that can only absorb ours.
+    """
+    if other_need_l <= 0:
+        return 0.0
+    if free_after_l < other_need_l:
         return 1.0
-    # V7 (FREEZER_BLOOD_03) is shared overflow for V3 and V4
-    if dst_id == "FREEZER_BLOOD_03":
-        return 0.85
+    if free_after_l < other_need_l * 2:
+        return 0.5
     return 0.1
 
 
@@ -74,7 +63,8 @@ def pick_backup(
     need_l: float,
     other_need_l: float,
 ) -> AssetSpec | None:
-    candidates: list[tuple[float, AssetSpec]] = []
+    """Greedy destination choice. O(vaults), explainable, no solver."""
+    candidates: list[tuple[float, str, AssetSpec]] = []
     for dst in ASSETS:
         if dst.asset_id == src.asset_id or not dst.thermal:
             continue
@@ -86,10 +76,10 @@ def pick_backup(
         d = distance_m(src, dst)
         staff_eta = 1.5 + 0.4 * abs(src.floor - dst.floor)
         free_frac = free / max(dst.capacity_l, 1.0)
-        cr = cascade_risk(dst.asset_id, reserved, remaining, other_need_l)
+        cr = cascade_risk(free - need_l, other_need_l)
         cost = 3.0 * d + 2.0 * staff_eta + 1.0 * (1.0 - free_frac) + 2.0 * kwh_move() + 4.0 * cr
-        candidates.append((cost, dst))
+        candidates.append((cost, dst.asset_id, dst))
     if not candidates:
         return None
-    candidates.sort(key=lambda x: x[0])
-    return candidates[0][1]
+    candidates.sort(key=lambda x: (x[0], x[1]))
+    return candidates[0][2]

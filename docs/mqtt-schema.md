@@ -14,7 +14,17 @@ Site token: `{site}` = `elcia-emc` in the demo.
 | `cryo/{site}/cmd/{id}/reroute` | 1 | no | locked MOVE instruction |
 | `cryo/{site}/alerts/{alertId}` | 1 | no | alert + ticket |
 
-HTTP POST to `/ingest` is that payload with `topic` in the body.
+HTTP POST to `/ingest` (alias `/api/ingest`) is that payload with `topic` in the body. An unknown
+`asset_id` returns `404`; a non-numeric `temperature` or `compressor_health` returns `422`, because
+a malformed sensor frame is a data-quality fault and not a server crash.
+
+**Implementation status, stated plainly:** the simulator publishes `telemetry` at QoS 0 when
+`MQTT_HOST` is set, using `paho-mqtt` from the optional `mqtt` extra. `status`, `lwt`,
+`cmd/…/reroute`, and `alerts/…` are a specified contract for the firmware and the cloud bridge,
+not something the demo currently emits — and neither does the bundled ESP32 sketch, which posts
+over HTTP. The live demo path is HTTP, and the dashboard subscribes to the plant, not a broker.
+`GET /api/protocol` returns this topic list, which is what the command centre's Protocol panel
+renders.
 
 ## Telemetry payload
 
@@ -44,6 +54,10 @@ Crash carts omit thermal fields (`temperature` may be null) and report `map_x` /
 Broker LWT payload: `{"asset_id":"ILR_VAX_02","probe_online":false,"reason":"offline"}`.
 
 Ingest maps this to `model_mode=probe_dead` and `fault_class=PROBE_DEAD`. **Do not evacuate stock.** Open a maintenance ticket only.
+
+If the last reading before the probe died was already outside the labelled band, the classification
+becomes `BOTH` — blind *and* out of band — and that case does evacuate, because the product is
+already at risk and the instrument can no longer prove otherwise.
 
 ## Hardware drop-in
 

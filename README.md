@@ -1,54 +1,143 @@
 # CryoDispatch
 
-**Predict. Dispatch. Prove.** Hospital cold-chain plant for ELCIA Tech Summit 2026.
+**Predict. Dispatch. Prove.** A hospital cold-chain *plant* for ELCIA Tech Summit 2026.
 
-This is a closed loop, not a chart dashboard: sense → classify fault → predict time-to-breach → move the right bag → verify custody with QR → open a compressor ticket. Dead probes do **not** trigger evacuations.
+CryoDispatch simulates 24 cold-storage assets across a three-floor hospital — blood refrigerators
+(2–6 °C), vaccine and insulin ILRs (2–8 °C), a platelet agitator (22 ± 2 °C), plasma freezers
+(≤ −30 °C) and four location-only crash carts — and runs a **closed loop** over them:
 
-Not an eVIN replacement. Not FDA/NABH/WHO PQS certified.
+> sense telemetry → classify the fault → predict time-to-breach → dispatch the right stock to the
+> right backup vault with the right certified nurse → verify chain of custody by QR scan → open a
+> compressor maintenance ticket.
 
-## Apps
+## Why this is not a temperature dashboard
 
-| Path | What |
+**1. It predicts instead of reacting.** A first-order lumped thermal model,
+`τ·dT/dt + T = T_eq` with `T_eq = T_set + α_door·door + α_h·(1 − compressor_health)`, yields the
+time to threshold `t* = −τ·ln((T_th − T_eq)/(T − T_eq))`. When a compressor degrades, the
+*equilibrium* temperature jumps above the band and a countdown starts **while the measured air is
+still legal**. Deliberately not ARIMA, deliberately not `if (temp > 8)`.
+
+**2. A dead probe is not a hot vault.** The fault taxonomy separates the instrument from the
+process: `PROBE_DEAD` (sensor death — maintenance ticket only, stock stays put),
+`THERMAL_EXCURSION` (spoilage clock and dispatch), `BOTH` (blind *and* out of band — evacuate and
+re-instrument). Generic IoT treats "no data" as "hot"; this treats it as instrumentation.
+
+**3. It produces evidence.** A greedy router picks the backup by distance, free capacity and
+cascade risk, reserves litres so a second failure cascades elsewhere, and weighs the energy of
+holding a degraded compressor for 30 minutes (0.468 kWh) against moving the stock (0.220 kWh).
+Every completed move produces a nine-field "Chain of Cold Custody" PDF.
+
+## Repository map
+
+| Path | What it is |
 | --- | --- |
-| `apps/sim` | Python telemetry simulator + local plant API (port 8787) |
-| `apps/web` | Command center (Vite + React) |
-| `apps/staff` | Staff action app (Expo, 3 screens) |
-| `supabase/` | Postgres migrations + `ingest` Edge Function |
-| `packages/shared` | Shared TypeScript types |
+| `apps/sim` | Python plant: 24-asset simulator, thermal model, dispatcher, FastAPI + SSE on `:8787`. **This is the live demo path.** |
+| `apps/web` | Command centre (Vite + React): floor map, gauge, alert rail, custody PDF. |
+| `apps/staff` | Staff app (Expo SDK 56, three screens): inbox → accept MOVE → QR scan. |
+| `packages/shared` | TypeScript types shared by web and the plant's JSON contract. |
+| `supabase/` | Postgres migrations plus a Deno `ingest` Edge Function. A second, divergent implementation the demo does not use — see [Honest limitations](#honest-limitations). |
+| `docs/` | [How to run](docs/how-to-run.md) ([browser](docs/how-to-run.html)), [architecture](docs/architecture.md), [demo script](docs/demo-script.md), [MQTT contract](docs/mqtt-schema.md), [ESP32 sketch](docs/firmware/cryodispatch_esp32.ino), [printable QR cards](docs/qr-stickers.html), [pitch deck](docs/pitch/). |
 
-## Quick start (venue-proof local demo)
+## Run it
+
+Illustrated walkthrough: [docs/how-to-run.md](docs/how-to-run.md) · [open in a browser](docs/how-to-run.html).
+
+Requires Python ≥ 3.12 (the checked-out venv is 3.14), Node 20+, and pnpm 10.
+
+### 1. The plant (start this first)
 
 ```bash
 cd apps/sim
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-python -m sim
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/python -m sim          # plant + dashboard API on http://0.0.0.0:8787
 ```
 
-In another terminal:
+`.venv/bin/python -m sim --no-server` runs the terminal table only. `--tau` and `--tick` override
+`DEMO_TAU_MIN` and `TICK_SEC`.
+
+### 2. The command centre
 
 ```bash
-pnpm install
-pnpm dev:web
+pnpm install                      # from the repo root
+pnpm dev:web                      # http://localhost:5173
 ```
 
-Open http://localhost:5173. Trigger **Kill probe**, then **Compressor fail**, then accept the MOVE on the staff app.
+Vite proxies `/api` and `/ingest` to `127.0.0.1:8787`, so no environment variable is needed
+locally. Set `VITE_PLANT_URL` only when the plant is on another host.
+
+### 3. The staff app (Expo Go)
 
 ```bash
-# Staff (Expo Go). Use your machine LAN IP if the phone is not localhost.
-EXPO_PUBLIC_PLANT_URL=http://<LAN-IP>:8787 pnpm dev:staff
+EXPO_PUBLIC_PLANT_URL=http://<laptop-LAN-IP>:8787 pnpm dev:staff
 ```
 
-Anomaly from the CLI while the plant is running:
+The phone must reach the laptop. The inbox screen prints the URL it is using, so a wrong IP is
+visible rather than silent. Without the camera you can type codes: `UNIT:BAG-ONEG-01`,
+`VAULT:FREEZER_BLOOD_04`, `VAULT:FREEZER_BLOOD_03`.
+
+### 4. Drive the demo
+
+Use the command-centre header buttons (**Kill probe**, **Compressor fail**, **Second vault**,
+**Reset plant**) or the CLI against a running plant:
 
 ```bash
-python -m sim --anomaly FREEZER_BLOOD_04 compressor
-python -m sim --anomaly ILR_VAX_02 lwt
+cd apps/sim
+.venv/bin/python -m sim --anomaly ILR_VAX_02 lwt            # probe death → ticket only
+.venv/bin/python -m sim --anomaly FREEZER_BLOOD_04 compressor  # predicted breach → MOVE
+.venv/bin/python -m sim --anomaly FREEZER_BLOOD_05 compressor  # forced cascade
+.venv/bin/python -m sim --anomaly ALL reset                 # replay for the next judge
 ```
 
-## Demo beat (90 seconds)
+The full 90-second beat is in [docs/demo-script.md](docs/demo-script.md). Print
+[docs/qr-stickers.html](docs/qr-stickers.html) before travelling.
 
-See [docs/demo-script.md](docs/demo-script.md). Pitch deck: [docs/pitch/CryoDispatch.pptx](docs/pitch/CryoDispatch.pptx). Printable QR cards: [docs/qr-stickers.html](docs/qr-stickers.html). Hardware drop-in: [docs/firmware/cryodispatch_esp32.ino](docs/firmware/cryodispatch_esp32.ino).
+### Tests and checks
 
-MQTT topic contract: [docs/mqtt-schema.md](docs/mqtt-schema.md). The live path is HTTP → plant (or Supabase). The dashboard never subscribes to a broker.
+```bash
+cd apps/sim && .venv/bin/pytest -q      # 58 tests
+pnpm typecheck                          # web + shared
+pnpm build:web
+```
+
+## Honest limitations
+
+Stated up front, because a discovered limit is worse than a declared one.
+
+- **The freeze rail cannot be demonstrated.** `T_eq` is monotonically at or above setpoint in the
+  current model, so `minutes_to_freeze` always returns the stable sentinel. "Freeze ≤ 0 °C kills
+  alum-adjuvanted vaccines" is a real hazard and is in the pitch, but the plant has no overcool or
+  stuck-thermostat stimulus to trigger it.
+- **The Supabase path is unproven and divergent.** `supabase/functions/ingest` re-implements the
+  thermal model in Deno and disagrees with the Python plant on the risk formula, MKT scope, backup
+  selection (it hardcodes `WALKIN_COLD_02` where the Python router computes `FREEZER_BLOOD_06`),
+  history write frequency, and it inserts missions with an empty `units` array. It is a deployment
+  sketch, not a second live path.
+- **Only the `telemetry` MQTT topic is published,** and only when `MQTT_HOST` is set. `status`,
+  `lwt`, `cmd/…/reroute` and `alerts/…` are a specified hardware contract, not emitted traffic.
+- **Nothing is persisted.** The plant is in-memory; restarting it is the biggest reset there is.
+- **No auth, no multi-tenancy, no push notifications.** One site, one process, in-app haptics only.
+- **Not built:** a real ESP32 on the bench with a live MQTT last-will, and a backup screen
+  recording of the demo.
+
+## Deliberately out of scope
+
+ARIMA or any learned forecaster (the physics is explainable and the data is synthetic); a
+constraint solver for routing (a greedy O(vaults) rule is defensible on stage); FCM/APNs; a native
+map; multi-tenant RLS; and MQTT as the live bus — venue Wi-Fi must not be able to kill the demo.
+
+## Compliance posture
+
+Temperature bands are hardcoded from CDSCO, NBTC and WHO published sources. The system alarms on
+any out-of-range reading and **never auto-discards**: a door-open is an event, product leaving the
+labelled band is an excursion that leads to quarantine and QA review. Freeze is treated as
+seriously as heat. Mean kinetic temperature is computed as an illustrative thermal-stress index on
+insulin/pharma-fridge assets only, and is **never** used to release blood or vaccines
+(USP ⟨1079.2⟩).
+
+Audit-trail controls are **inspired by** 21 CFR Part 11.10 and CDSCO GDP §15.7. CryoDispatch is
+**not** FDA or Part 11 certified, **not** WHO PQS prequalified, **not** NABH or NABL accredited,
+**not** a replacement for eVIN or e-BloodBank, and MKT here does **not** prove potency. eVIN
+already monitors vaccine ILRs nationally and e-BloodBank already handles blood inventory;
+CryoDispatch sits beside them and runs the hospital-floor closed loop they do not.

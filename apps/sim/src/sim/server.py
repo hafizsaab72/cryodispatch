@@ -79,6 +79,8 @@ def ingest(payload: dict[str, Any]) -> dict[str, Any]:
         return plant.ingest(payload)
     except KeyError as exc:
         raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.post("/api/anomaly")
@@ -87,6 +89,12 @@ def anomaly(body: AnomalyIn) -> dict[str, Any]:
         return plant.anomaly(body.asset_id, body.kind)
     except (KeyError, ValueError) as exc:
         raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/api/reset")
+def reset() -> dict[str, Any]:
+    """Return the plant to its opening state so the demo can be run again."""
+    return plant.reset_all()
 
 
 @app.post("/api/missions/{mission_id}/accept")

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CryoDispatch · How to run</title>
+    <style>
+      :root {
+        --bg: #04151c;
+        --panel: #0b2430;
+        --line: #1c4654;
+        --ice: #d7f3f2;
+        --mute: #7fa3ad;
+        --cyan: #2ec4b6;
+        --hot: #e07a3d;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ice);
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      main { max-width: 920px; margin: 0 auto; padding: 32px 24px 72px; }
+      h1 { font-size: 28px; margin: 0 0 8px; }
+      h2 { color: var(--cyan); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; margin: 40px 0 12px; }
+      h3 { font-size: 16px; margin: 24px 0 8px; }
+      p, li { color: var(--ice); }
+      .lede { color: var(--mute); max-width: 68ch; }
+      a { color: var(--cyan); }
+      img.fig { width: 100%; height: auto; display: block; margin: 16px 0 8px; border-radius: 16px; }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .card .kicker { color: var(--cyan); font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; }
+      .card h3 { margin: 6px 0 8px; }
+      .card p { margin: 0; color: var(--mute); font-size: 14px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+      th { color: var(--mute); font-weight: 600; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+      code, pre {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 13px;
+      }
+      code { color: var(--cyan); }
+      pre {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        color: var(--ice);
+      }
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+        margin: 16px 0;
+        flex-wrap: wrap;
+      }
+      .flow .node {
+        flex: 1 1 200px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+      .flow .node strong { display: block; margin-bottom: 4px; }
+      .flow .node span { color: var(--mute); font-size: 13px; }
+      .flow .arrow { color: var(--cyan); align-self: center; font-family: ui-monospace, Menlo, monospace; }
+      .note { color: var(--mute); font-size: 14px; max-width: 70ch; }
+      footer { margin-top: 48px; color: var(--mute); font-size: 13px; }
+      @media (max-width: 720px) {
+        .cards { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>How to run CryoDispatch</h1>
+      <p class="lede">
+        A first-time walkthrough. For the 90-second pitch, see
+        <a href="demo-script.md">demo-script.md</a>.
+        The Markdown twin is <a href="how-to-run.md">how-to-run.md</a>.
+        This page is offline — no build, no CDN.
+      </p>
+
+      <img class="fig" src="images/apps-overview.svg" alt="The three apps: plant, command centre, staff" />
+
+      <h2>What you are starting</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="kicker">apps/sim · :8787</div>
+          <h3>Plant</h3>
+          <p>Simulates 24 vaults, predicts time-to-breach, picks a backup and a certified nurse, writes the custody record. Start this first.</p>
+        </article>
+        <article class="card">
+          <div class="kicker">apps/web · :5173</div>
+          <h3>Command centre</h3>
+          <p>Hospital wall display: floor map, gauge, alert rail, demo buttons, custody PDF.</p>
+        </article>
+        <article class="card">
+          <div class="kicker">apps/staff · Expo Go</div>
+          <h3>Staff app</h3>
+          <p>Nurse phone: inbox → accept MOVE → scan unit, then source, then destination. Optional on a laptop.</p>
+        </article>
+      </div>
+
+      <h2>How they talk</h2>
+      <div class="flow" role="img" aria-label="Command centre and staff app talk to the plant">
+        <div class="node">
+          <strong>Command centre :5173</strong>
+          <span>Vite proxies <code>/api</code> and <code>/ingest</code></span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <strong>Plant :8787</strong>
+          <span>One process. All decisions live here.</span>
+        </div>
+        <div class="arrow">←</div>
+        <div class="node">
+          <strong>Staff Expo Go</strong>
+          <span>Polls <code>/api/state</code> on the LAN IP</span>
+        </div>
+      </div>
+      <p class="note">
+        The browser never talks to the plant’s port directly in local dev.
+        The phone must use the laptop’s LAN IP; <code>127.0.0.1</code> is the phone itself.
+      </p>
+
+      <h2>Prerequisites (once)</h2>
+      <ul>
+        <li>Python ≥ 3.12</li>
+        <li>Node 20+</li>
+        <li>pnpm 10 (<code>corepack enable</code> then <code>corepack prepare pnpm@10.15.0 --activate</code> if you do not have it)</li>
+        <li>Expo Go on a phone only if you want the staff app</li>
+      </ul>
+      <p class="note">From the repo root:</p>
+      <pre>cd apps/sim
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+cd ../..
+pnpm install</pre>
+
+      <h2>Every time — this order</h2>
+      <img class="fig" src="images/start-order.svg" alt="Start the plant, then the command centre, then optionally the staff app" />
+      <table>
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Command</th>
+            <th>You know it worked when</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1 · Plant</strong></td>
+            <td><code>cd apps/sim && .venv/bin/python -m sim</code></td>
+            <td>Rich table ticking; <a href="http://127.0.0.1:8787/api/state">/api/state</a> returns JSON</td>
+          </tr>
+          <tr>
+            <td><strong>2 · Command centre</strong></td>
+            <td><code>pnpm dev:web</code> from the repo root</td>
+            <td>Browser at <a href="http://localhost:5173">localhost:5173</a> shows a 3-floor map, not “Connecting to plant…”</td>
+          </tr>
+          <tr>
+            <td><strong>3 · Staff</strong> (optional)</td>
+            <td><code>EXPO_PUBLIC_PLANT_URL=http://&lt;LAN-IP&gt;:8787 pnpm dev:staff</code></td>
+            <td>Inbox prints that URL; Expo Go is on the same Wi-Fi</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">On this Mac the LAN IP is:</p>
+      <pre>ipconfig getifaddr en0</pre>
+      <p class="note">Three terminals. Leave the plant running while you start the others.</p>
+
+      <h2>What you will see</h2>
+      <h3>Command centre</h3>
+      <img class="fig" src="images/command-centre.svg" alt="Command centre: header demo buttons, floor map, gauge, alert rail" />
+      <p class="note">
+        Header buttons drive the demo: <strong>Kill probe</strong>, <strong>Compressor fail</strong>,
+        <strong>Second vault</strong>, <strong>Reset plant</strong>. Click a vault on the map to load the gauge.
+        Missions and tickets land on the right rail. <strong>Download PDF</strong> on a completed MOVE
+        writes the Chain of Cold Custody certificate in the browser.
+      </p>
+
+      <h3>Staff app</h3>
+      <img class="fig" src="images/staff-screens.svg" alt="Staff app: inbox, accept MOVE, QR scan" />
+      <p class="note">
+        The inbox prints the plant URL it is using — a wrong IP is visible, not silent.
+        After <strong>ACCEPT MOVE</strong> the plan is locked. Scan order is
+        <strong>unit → source vault → destination vault</strong>. A wrong vault is a hard reject.
+      </p>
+
+      <h2>Drive it without the phone</h2>
+      <p class="note">The command-centre header is enough for a laptop-only walkthrough. From another terminal you can hit the same anomalies:</p>
+      <pre>cd apps/sim
+.venv/bin/python -m sim --anomaly ILR_VAX_02 lwt              # probe death → ticket only
+.venv/bin/python -m sim --anomaly FREEZER_BLOOD_04 compressor  # predicted breach → MOVE
+.venv/bin/python -m sim --anomaly FREEZER_BLOOD_05 compressor  # cascade
+.venv/bin/python -m sim --anomaly ALL reset                   # replay</pre>
+      <p class="note">Without a camera, type these into the staff scan screen:</p>
+      <pre>UNIT:BAG-ONEG-01
+VAULT:FREEZER_BLOOD_04
+VAULT:FREEZER_BLOOD_03</pre>
+      <p class="note">
+        Printable cards: <a href="qr-stickers.html">qr-stickers.html</a>.
+        Full 90-second beat: <a href="demo-script.md">demo-script.md</a>.
+      </p>
+
+      <h2>If it does not work</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Symptom</th>
+            <th>Fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Web stuck on “Connecting to plant…”</td>
+            <td>Start the plant first (<code>apps/sim</code> → <code>.venv/bin/python -m sim</code>).</td>
+          </tr>
+          <tr>
+            <td>Phone inbox empty / cannot fetch</td>
+            <td>Inbox URL is the tell. <code>127.0.0.1</code> is dead on a physical phone. Set <code>EXPO_PUBLIC_PLANT_URL</code> to <code>http://&lt;LAN-IP&gt;:8787</code> and stay on the same Wi-Fi.</td>
+          </tr>
+          <tr>
+            <td>Camera denied</td>
+            <td>Type the three codes above.</td>
+          </tr>
+          <tr>
+            <td><code>npm</code> warnings or broken Expo resolve</td>
+            <td>Use <strong>pnpm</strong>, not npm.</td>
+          </tr>
+          <tr>
+            <td>Want a clean replay</td>
+            <td><strong>Reset plant</strong> in the header, or <code>--anomaly ALL reset</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>You do not need</h2>
+      <p class="note">
+        Supabase, MQTT, or the ESP32 firmware. Those are optional extras.
+        The live path is the Python plant plus the two clients on one laptop (and an optional phone).
+      </p>
+
+      <footer>CryoDispatch · Predict. Dispatch. Prove.</footer>
+    </main>
+  </body>
+</html>

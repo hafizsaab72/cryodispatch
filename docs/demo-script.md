@@ -1,24 +1,49 @@
 # 90-second live demo
 
-Hospital: **ELCIA Medical Centre**. Plant: `python -m sim`. Command center: `pnpm dev:web`. Staff: Expo Go.
+Hospital: **ELCIA Medical Centre**. Plant: `cd apps/sim && .venv/bin/python -m sim`. Command centre: `pnpm dev:web`. Staff: Expo Go.
 
-Print [qr-stickers.html](qr-stickers.html) first. Hand the phone to a judge.
+Print [qr-stickers.html](qr-stickers.html) **before** you travel. Hand the phone to a judge.
 
 | t | Say / do |
 | --- | --- |
-| 0–10s | Floor map, 24 assets. “This is a **plant**, not a dashboard. Newton cooling for the box.” |
-| 10–25s | Click **Kill probe** (`ILR_VAX_02`). Purple node. Ticket only. **No MOVE.** “Dead probe ≠ spoiled blood.” |
-| 25–40s | Click **Compressor V3** (`FREEZER_BLOOD_04`). `T_eq` jumps above 6°C while air is still ~4°C. Time-to-breach counts down. MOVE card: O-neg → `FREEZER_BLOOD_03`. kWh hold vs move. |
-| 40–65s | Staff: **Accept**. Scan `UNIT:BAG-ONEG-01` → `VAULT:FREEZER_BLOOD_04` → once, scan the **wrong** dest sticker. Red reject. Then scan the real dest. |
-| 65–80s | Click **Second vault** (`FREEZER_BLOOD_05`). Cascade: `WALKIN_COLD_02` because V7 litres are reserved. |
-| 80–90s | **Custody PDF**. Nine GDP fields. Footer: inspired by 21 CFR 11.10 — not certified. “Closed loop.” |
+| 0–10s | Floor map, 24 assets, all in band. "This is a plant, not a dashboard. Newton cooling for the cabinet, Arrhenius for the drug." |
+| 10–25s | **Kill probe** (`ILR_VAX_02`). Node turns violet. A maintenance ticket opens and **no MOVE appears**. "A dead probe means we don't know the temperature — it doesn't mean the blood is hot, so we ticket the instrument and leave the stock where it is." |
+| 25–40s | **Compressor fail** (`FREEZER_BLOOD_04`). `T_eq` jumps to 7.8°C, the countdown starts at ~1.4 min, and the chip still reads **AIR STILL IN BAND**. "We are not reacting to a breach. We are predicting one." MOVE card: 4 bags (1.4 L) → `FREEZER_BLOOD_03`, Nurse Rao, hold 0.468 kWh vs move 0.220 kWh. |
+| 40–65s | Staff phone: **Accept**, scan `UNIT:BAG-ONEG-01` → `VAULT:FREEZER_BLOOD_04` → deliberately scan the **wrong** vault card (red REJECTED) → then `VAULT:FREEZER_BLOOD_03`. Custody closes live on the wall. |
+| 65–80s | **Second vault** (`FREEZER_BLOOD_05`, 2 bags / 0.7 L). Vault 3 has only 0.4 L left, so the router cascades to `FREEZER_BLOOD_06` (ICU satellite 2). "The backup had room for one vault, not two — the router knew that before it committed." |
+| 80–90s | **Custody PDF**. Nine GDP fields, disposition RELEASED because we moved *before* any excursion, payload hash at the top. "Detect, predict, dispatch, verify, prove." |
 
-CLI backup if the UI is busy:
+## Between judges
+
+Press **Reset plant** in the command centre header. Stock returns to its home vault, staff are freed, reserved litres are released, and alerts clear — the full script can be run again without restarting the process.
+
+CLI equivalents:
+
+Run these from `apps/sim`, against the already-running plant (they POST to `/api/anomaly` on
+`127.0.0.1:8787`; if no plant answers they fall back to an in-process one-shot):
 
 ```bash
-python -m sim --anomaly ILR_VAX_02 lwt
-python -m sim --anomaly FREEZER_BLOOD_04 compressor
-python -m sim --anomaly FREEZER_BLOOD_05 compressor
+.venv/bin/python -m sim --anomaly ILR_VAX_02 lwt
+.venv/bin/python -m sim --anomaly FREEZER_BLOOD_04 compressor
+.venv/bin/python -m sim --anomaly FREEZER_BLOOD_05 compressor
+.venv/bin/python -m sim --anomaly ALL reset
 ```
 
-Offline fallback: the plant on `:8787` is already local. If venue Wi-Fi dies, tether the phone to the laptop hotspot.
+## If something goes wrong
+
+- **Phone cannot reach the plant** — the inbox prints the URL it is using. Re-launch with `EXPO_PUBLIC_PLANT_URL=http://<laptop-LAN-IP>:8787`. Tether the phone to the laptop hotspot rather than venue Wi-Fi.
+- **Wrong sticker rejected unexpectedly** — the scan screen always shows the live source and destination. Read it off the phone; do not trust the printed label.
+- **Everything is dirty** — Reset plant, or restart `.venv/bin/python -m sim`. Nothing is persisted.
+- Venue Wi-Fi is never required: the plant, the web app, and the phone all talk over the LAN.
+
+## If a judge pushes
+
+- *"Can you show the freeze case?"* — No. `T_eq` never falls below setpoint in this model, so the
+  freeze countdown is unreachable; the band is enforced and alarmed, but the stimulus is not built.
+  Say that rather than improvising.
+- *"Is this certified?"* — No. Controls are inspired by 21 CFR Part 11.10 and CDSCO GDP §15.7.
+  Not FDA/Part 11 certified, not WHO PQS prequalified, not NABH/NABL accredited, not an eVIN
+  replacement. MKT is a thermal-stress index and never releases blood or vaccines.
+- *"Is that real MQTT?"* — Only `telemetry` is published, and only when `MQTT_HOST` is set. The
+  rest of `docs/mqtt-schema.md` is a hardware contract. The live path is HTTP on the LAN, on
+  purpose.

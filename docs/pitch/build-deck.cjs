@@ -180,34 +180,61 @@ function lightBg(slide) {
   });
 }
 
-// 6 Demo
+// 6 Proof of the closed loop
 {
   const s = pres.addSlide();
   lightBg(s);
-  s.addText("Ninety seconds. A judge holds the phone.", {
+  s.addText("The loop closes on evidence, not an alert", {
     x: 0.6, y: 0.4, w: 12, h: 0.55,
     fontFace: "Cambria", fontSize: 28, color: INK, bold: true, margin: 0,
   });
-  const steps = [
-    ["0–10s", "Plant, not a chart"],
-    ["10–25s", "Kill probe → ticket, no MOVE"],
-    ["25–40s", "Compressor: T_eq up, air still legal"],
-    ["40–65s", "Accept. Wrong-vault QR fails."],
-    ["65–80s", "Second vault cascades to V8"],
-    ["80–90s", "Custody PDF + kWh hold vs move"],
-  ];
-  steps.forEach((st, i) => {
-    const col = i % 3;
-    const row = Math.floor(i / 3);
-    const x = 0.6 + col * 4.15;
-    const y = 1.25 + row * 2.7;
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
-      x, y, w: 3.95, h: 2.45, fill: { color: PANEL }, rectRadius: 0.1,
-    });
-    iceCircle(s, x + 0.25, y + 0.3, String(i + 1));
-    s.addText(st[0], { x: x + 0.8, y: y + 0.32, w: 2.8, h: 0.4, fontFace: "Calibri", fontSize: 14, color: CYAN, margin: 0 });
-    s.addText(st[1], { x: x + 0.25, y: y + 1.0, w: 3.45, h: 1.1, fontFace: "Calibri", fontSize: 16, color: ICE, margin: 0 });
+
+  // Left: the decision economics, measured.
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 0.6, y: 1.25, w: 6.0, h: 5.4, fill: { color: PANEL }, rectRadius: 0.12,
   });
+  s.addText("Hold the failing vault, or move the stock?", {
+    x: 0.9, y: 1.5, w: 5.4, h: 0.5,
+    fontFace: "Calibri", fontSize: 16, color: CYAN, margin: 0,
+  });
+  s.addText("0.468", {
+    x: 0.9, y: 2.1, w: 2.4, h: 0.9,
+    fontFace: "Calibri", fontSize: 54, color: AMBER, bold: true, margin: 0,
+  });
+  s.addText("kWh to hold a degraded\ncompressor for 30 min", {
+    x: 0.9, y: 3.05, w: 2.4, h: 0.8,
+    fontFace: "Calibri", fontSize: 13, color: MUTE, margin: 0,
+  });
+  s.addText("0.220", {
+    x: 3.7, y: 2.1, w: 2.4, h: 0.9,
+    fontFace: "Calibri", fontSize: 54, color: CYAN, bold: true, margin: 0,
+  });
+  s.addText("kWh to relocate the\nstock and let it cool", {
+    x: 3.7, y: 3.05, w: 2.4, h: 0.8,
+    fontFace: "Calibri", fontSize: 13, color: MUTE, margin: 0,
+  });
+  s.addText("The router also refuses a backup that could not absorb a second failure. Vault 3 had room for one vault, not two — so the next failure cascaded to ICU satellite 2 before anyone asked.", {
+    x: 0.9, y: 4.1, w: 5.4, h: 2.1,
+    fontFace: "Calibri", fontSize: 15, color: ICE, margin: 0,
+  });
+
+  // Right: the artefact a regulator would ask for.
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
+    x: 6.9, y: 1.25, w: 5.8, h: 5.4, fill: { color: INK }, rectRadius: 0.12,
+  });
+  s.addText("Chain of Cold Custody", {
+    x: 7.2, y: 1.5, w: 5.2, h: 0.4,
+    fontFace: "Calibri", fontSize: 16, color: CYAN, margin: 0,
+  });
+  s.addText("Every handoff, timestamped IST\nMin / max / time out of range\nSensor ID + last calibration\nDisposition: released or quarantined\nComputer-generated audit trail\nPayload hash on every document", {
+    x: 7.2, y: 2.1, w: 5.2, h: 3.0,
+    fontFace: "Calibri", fontSize: 16, color: ICE, margin: 0,
+  });
+  s.addText("We moved before any excursion, so this batch reads RELEASED — and the document proves it.", {
+    x: 7.2, y: 5.3, w: 5.2, h: 1.0,
+    fontFace: "Calibri", fontSize: 14, color: MUTE, margin: 0,
+  });
+  s.addNotes("Numbers are from a live run: hold 0.468 kWh vs move 0.220 kWh. Cascade target is FREEZER_BLOOD_06 (ICU satellite 2).");
 }
 
 // 7 Compliance
@@ -221,7 +248,7 @@ function lightBg(slide) {
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, {
     x: 0.6, y: 1.2, w: 6.1, h: 5.5, fill: { color: PANEL }, rectRadius: 0.12,
   });
-  s.addText("RBC 2–6°C   ·   vaccines 2–8°C\nPlatelets 22±2°C   ·   FFP ≤ −30°C\nFreeze ≤0°C is critical on alum vaccines\nDoor-open ≠ discard\nQuarantine. Never auto-scrap.", {
+  s.addText("RBC 2–6°C   ·   vaccines 2–8°C\nPlatelets 22±2°C, continuous agitation\nFFP ≤ −30°C\nFreeze ≤0°C is critical on alum vaccines\nDoor-open ≠ discard\nQuarantine. Never auto-scrap.", {
     x: 0.9, y: 1.5, w: 5.6, h: 4.8,
     fontFace: "Calibri", fontSize: 18, color: ICE, margin: 0,
   });

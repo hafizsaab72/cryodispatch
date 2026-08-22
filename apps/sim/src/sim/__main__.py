@@ -69,23 +69,29 @@ def _loop(plant: Plant, stop: threading.Event, tick_sec: float) -> None:
         httpx = _httpx.Client(timeout=2.0)
 
     while not stop.is_set():
-        plant.step()
-        if httpx and ingest_url:
-            for a in plant.assets.values():
-                if not a.spec.thermal:
-                    continue
-                try:
-                    httpx.post(
-                        ingest_url,
-                        json=plant.telemetry_of(a).model_dump(),
-                        headers={"Authorization": f"Bearer {ingest_key}"} if ingest_key else {},
-                    )
-                except Exception:
-                    pass
-        if client:
-            for a in plant.assets.values():
-                tel = plant.telemetry_of(a)
-                client.publish(tel.topic, tel.model_dump_json(), qos=0)
+        try:
+            plant.step()
+            if httpx and ingest_url:
+                for a in plant.assets.values():
+                    if not a.spec.thermal:
+                        continue
+                    try:
+                        httpx.post(
+                            ingest_url,
+                            json=plant.telemetry_of(a).model_dump(),
+                            headers={"Authorization": f"Bearer {ingest_key}"} if ingest_key else {},
+                        )
+                    except Exception:
+                        pass
+            if client:
+                for a in plant.assets.values():
+                    try:
+                        tel = plant.telemetry_of(a)
+                        client.publish(tel.topic, tel.model_dump_json(), qos=0)
+                    except Exception:
+                        pass
+        except Exception as exc:  # noqa: BLE001
+            Console().print(f"[red]tick skipped:[/red] {exc}")
         stop.wait(tick_sec)
 
 

@@ -4,40 +4,59 @@
     <meta charset="utf-8" />
     <title>CryoDispatch QR stickers</title>
     <style>
-      body { font-family: "IBM Plex Sans", sans-serif; background: #04151c; color: #d7f3f2; margin: 24px; }
+      body { font-family: "IBM Plex Sans", system-ui, sans-serif; background: #04151c; color: #d7f3f2; margin: 24px; }
       h1 { color: #2ec4b6; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase; }
-      .grid { display: grid; grid-template-columns: repeat(3, 220px); gap: 20px; }
+      p { max-width: 60ch; line-height: 1.5; }
+      .grid { display: grid; grid-template-columns: repeat(3, 220px); gap: 20px; margin-top: 20px; }
       .card { background: #0b2430; border: 1px solid #1c4654; border-radius: 12px; padding: 12px; text-align: center; page-break-inside: avoid; }
-      .card img { background: white; padding: 8px; border-radius: 8px; }
-      code { font-size: 11px; color: #7fa3ad; }
-      @media print { body { background: white; color: black; } .card { border-color: #333; } }
+      .card canvas { background: white; padding: 8px; border-radius: 8px; }
+      .kind { font-weight: 700; letter-spacing: 0.06em; }
+      .label { font-size: 13px; margin: 4px 0 8px; }
+      code { font-size: 11px; color: #7fa3ad; word-break: break-all; }
+      .fallback { font-family: ui-monospace, monospace; font-size: 15px; padding: 24px 8px; border: 2px dashed #e07a3d; border-radius: 8px; color: #e07a3d; }
+      @media print { body { background: white; color: black; } .card { border-color: #333; } .noprint { display: none; } }
     </style>
   </head>
   <body>
-    <h1>CryoDispatch · print these three + one wrong vault</h1>
-    <p>Scan order: unit → source vault → dest vault. The wrong dest is the wow.</p>
+    <h1>CryoDispatch · custody stickers</h1>
+    <p class="noprint">
+      Scan order is <strong>unit → source vault → destination vault</strong>. Print this sheet before
+      you travel; it loads its QR encoder from a CDN, and if that is unavailable each card falls back
+      to its payload in large type so it can still be typed into the staff app.
+    </p>
+    <p class="noprint">
+      The plant chooses the destination at run time. The staff scan screen always shows the live
+      source and destination — trust the phone over the printed label.
+    </p>
     <div class="grid" id="grid"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script>
       const items = [
-        ["UNIT", "UNIT:BAG-ONEG-01", "O-neg bag"],
-        ["SOURCE", "VAULT:FREEZER_BLOOD_04", "Vault 4 (V3)"],
-        ["DEST", "VAULT:FREEZER_BLOOD_03", "Vault 3 backup (V7)"],
-        ["WRONG", "VAULT:WALKIN_COLD_01", "Wrong vault — expect red"],
-        ["DEST2", "VAULT:WALKIN_COLD_02", "Cascade overflow (V8)"],
-        ["UNIT2", "UNIT:BAG-BPOS-01", "B-pos (second fail)"],
+        ["UNIT", "UNIT:BAG-ONEG-01", "O-neg bag · primary move"],
+        ["SOURCE", "VAULT:FREEZER_BLOOD_04", "RBC Vault 4 · failing"],
+        ["DEST", "VAULT:FREEZER_BLOOD_03", "RBC Vault 3 · backup"],
+        ["WRONG", "VAULT:WALKIN_COLD_01", "Wrong vault — expect red REJECTED"],
+        ["UNIT 2", "UNIT:BAG-BPOS-01", "B-pos bag · cascade move"],
+        ["DEST 2", "VAULT:FREEZER_BLOOD_06", "ICU satellite 2 · cascade target"],
       ];
       const grid = document.getElementById("grid");
       for (const [kind, payload, label] of items) {
         const card = document.createElement("div");
         card.className = "card";
-        const canvas = document.createElement("canvas");
-        new QRious({ element: canvas, value: payload, size: 180 });
-        card.innerHTML = `<strong>${kind}</strong><div>${label}</div>`;
-        card.appendChild(canvas);
+        card.innerHTML =
+          '<div class="kind">' + kind + '</div><div class="label">' + label + "</div>";
+        if (typeof QRious === "function") {
+          const canvas = document.createElement("canvas");
+          new QRious({ element: canvas, value: payload, size: 180 });
+          card.appendChild(canvas);
+        } else {
+          const fb = document.createElement("div");
+          fb.className = "fallback";
+          fb.textContent = payload;
+          card.appendChild(fb);
+        }
         const code = document.createElement("code");
         code.textContent = payload;
-        card.appendChild(document.createElement("br"));
         card.appendChild(code);
         grid.appendChild(card);
       }

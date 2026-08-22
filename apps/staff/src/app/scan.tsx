@@ -1,76 +1,159 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams } from "expo-router";
-import { useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import { scanMission, type Mission } from "../lib/api";
+import { fetchMission, scanMission, type Mission } from "../lib/api";
+
+const STEP_HINT: Record<string, string> = {
+  unit: "Scan the bag QR",
+  source: "Scan the SOURCE vault",
+  dest: "Scan the DESTINATION vault",
+  done: "Custody closed",
+};
 
 export default function ScanScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [m, setM] = useState<Mission | null>(null);
   const [typed, setTyped] = useState("");
-  const lock = useRef(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const lastCode = useRef<string | null>(null);
+  const inflight = useRef(false);
 
-  async function apply(code: string) {
-    if (!id || lock.current) return;
-    lock.current = true;
-    const next = await scanMission(id, code.trim());
-    setM(next);
-    if (next.last_reject) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } else {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    setTimeout(() => {
-      lock.current = false;
-    }, 1200);
-  }
+  useEffect(() => {
+    if (!id) return;
+    fetchMission(id)
+      .then(setM)
+      .catch((e: Error) => setError(e.message));
+  }, [id]);
+
+  const apply = useCallback(
+    async (raw: string) => {
+      const code = raw.trim().toUpperCase();
+      if (!id || inflight.current || !code) return;
+      // Ignore the same sticker sitting in frame; only a new code is a new scan.
+      if (code === lastCode.current) return;
+      lastCode.current = code;
+      inflight.current = true;
+      setBusy(true);
+      try {
+        const next = await scanMission(id, code);
+        setM(next);
+        setError(null);
+        await Haptics.notificationAsync(
+          next.last_reject
+            ? Haptics.NotificationFeedbackType.Error
+            : Haptics.NotificationFeedbackType.Success,
+        );
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Scan failed");
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } finally {
+        inflight.current = false;
+        setBusy(false);
+        setTyped("");
+        // Allow the same sticker to be re-scanned after a short pause.
+        setTimeout(() => {
+          lastCode.current = null;
+        }, 1500);
+      }
+    },
+    [id],
+  );
+
+  const step = m?.scan_step ?? "unit";
+  const done = m?.status === "complete";
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#04151c" }}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#04151c" }}>
       {permission?.granted ? (
         <CameraView
-          style={{ height: 280 }}
+          style={{ height: 260 }}
           barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-          onBarcodeScanned={({ data }) => apply(data)}
+          onBarcodeScanned={busy || done ? undefined : ({ data }) => apply(data)}
         />
       ) : (
-        <Pressable onPress={requestPermission} style={{ height: 160, justifyContent: "center" }}>
-          <Text style={{ color: "#2ec4b6", textAlign: "center" }}>Enable camera for QR</Text>
+        <Pressable
+          onPress={requestPermission}
+          style={{ height: 120, justifyContent: "center", backgroundColor: "#0b2430" }}
+        >
+          <Text style={{ color: "#2ec4b6", textAlign: "center", fontSize: 16 }}>
+            Tap to enable camera, or type a code below
+          </Text>
         </Pressable>
       )}
-      <View style={{ padding: 16, gap: 10 }}>
-        <Text style={{ color: "#7fa3ad" }}>
-          Step: {m?.scan_step ?? "unit"} · unit → source vault → dest vault
-        </Text>
+
+      <View style={{ padding: 16, gap: 12 }}>
+        <Text style={{ color: "#2ec4b6", fontSize: 18, fontWeight: "700" }}>{STEP_HINT[step]}</Text>
+
+        {m ? (
+          <View style={{ backgroundColor: "#0b2430", borderRadius: 10, padding: 12, gap: 4 }}>
+            <Text style={{ color: "#7fa3ad", fontSize: 13 }}>Source</Text>
+            <Text style={{ color: "#d7f3f2", fontSize: 15 }}>{m.from_asset}</Text>
+            <Text style={{ color: "#7fa3ad", fontSize: 13, marginTop: 6 }}>Destination</Text>
+            <Text style={{ color: "#d7f3f2", fontSize: 15, fontWeight: "700" }}>{m.to_asset}</Text>
+          </View>
+        ) : null}
+
         {m?.last_reject ? (
-          <Text style={{ color: "#e23d28", fontSize: 16, fontWeight: "600" }}>{m.last_reject}</Text>
+          <View style={{ backgroundColor: "#3a1210", borderRadius: 10, padding: 14 }}>
+            <Text style={{ color: "#ff6a5a", fontSize: 17, fontWeight: "700" }}>REJECTED</Text>
+            <Text style={{ color: "#ffd9d4", fontSize: 15, marginTop: 4 }}>{m.last_reject}</Text>
+          </View>
         ) : null}
-        {m?.status === "complete" ? (
-          <Text style={{ color: "#3ddc97", fontSize: 18 }}>Custody closed. Plant sees check-in live.</Text>
+
+        {error ? (
+          <View style={{ backgroundColor: "#3a1210", borderRadius: 10, padding: 14 }}>
+            <Text style={{ color: "#ff6a5a", fontSize: 15 }}>{error}</Text>
+            <Text style={{ color: "#ffd9d4", fontSize: 13, marginTop: 6 }}>
+              Set EXPO_PUBLIC_PLANT_URL to the laptop's LAN IP and reload.
+            </Text>
+          </View>
         ) : null}
+
+        {done ? (
+          <Text style={{ color: "#3ddc97", fontSize: 18, fontWeight: "700" }}>
+            Custody closed. The command centre sees the check-in live.
+          </Text>
+        ) : null}
+
         <TextInput
           placeholder="UNIT:BAG-ONEG-01 or VAULT:FREEZER_BLOOD_04"
-          placeholderTextColor="#7fa3ad"
+          placeholderTextColor="#5c7f8a"
           value={typed}
           onChangeText={setTyped}
           autoCapitalize="characters"
+          autoCorrect={false}
+          spellCheck={false}
+          editable={!done}
           style={{
             borderColor: "#1c4654",
             borderWidth: 1,
             borderRadius: 8,
             padding: 12,
             color: "#d7f3f2",
+            fontSize: 15,
           }}
         />
         <Pressable
-          onPress={() => apply(typed)}
-          style={{ backgroundColor: "#2ec4b6", borderRadius: 10, padding: 14 }}
+          onPress={() => {
+            lastCode.current = null;
+            apply(typed);
+          }}
+          disabled={busy || done}
+          style={{
+            backgroundColor: busy || done ? "#1c4654" : "#2ec4b6",
+            borderRadius: 10,
+            padding: 14,
+          }}
         >
-          <Text style={{ color: "#04151c", textAlign: "center", fontWeight: "700" }}>Submit code</Text>
+          <Text style={{ color: "#04151c", textAlign: "center", fontWeight: "700", fontSize: 15 }}>
+            {busy ? "Checking…" : "Submit code"}
+          </Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 }

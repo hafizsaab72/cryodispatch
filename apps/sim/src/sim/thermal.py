@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import math
-from typing import Literal
 
 DH_OVER_R = 10_000.0  # USP ΔH/R ≈ 83.144 kJ/mol / 8.3144 J
 STABLE_SENTINEL = 9999.0
+MIN_SLOPE_SAMPLES = 5
 
 
 def t_eq(
@@ -26,16 +26,20 @@ def step_temperature(t: float, teq: float, tau_min: float, dt_min: float) -> flo
     return teq + (t - teq) * math.exp(-dt_min / tau_min)
 
 
-def minutes_to_breach(t: float, teq: float, t_th: float, tau_min: float) -> tuple[float, Literal["warming", "stable", "breached"]]:
+def minutes_to_breach(t: float, teq: float, t_th: float, tau_min: float) -> float:
+    """Minutes until the air reaches the upper rail. STABLE_SENTINEL if never.
+
+    Callers must pass finite values; the plant enforces that at its one
+    external boundary (`Plant.ingest`) so a NaN cannot be laundered into 0.0.
+    """
     if t >= t_th:
-        return 0.0, "breached"
+        return 0.0
     if teq <= t_th:
-        return STABLE_SENTINEL, "stable"
+        return STABLE_SENTINEL
     ratio = (t_th - teq) / (t - teq)
     if ratio <= 0:
-        return 0.0, "breached"
-    t_star = -tau_min * math.log(ratio)
-    return max(0.0, t_star), "warming"
+        return 0.0
+    return max(0.0, -tau_min * math.log(ratio))
 
 
 def minutes_to_freeze(t: float, teq: float, freeze_th: float, tau_min: float) -> float:
@@ -55,15 +59,22 @@ def predicted_t(t: float, teq: float, tau_min: float, horizon_min: float) -> flo
 
 
 def slope_c_per_min(history: list[tuple[float, float]]) -> float | None:
-    """history: list of (t_min, temperature). Last N points."""
-    if len(history) < 2:
+    """Least-squares dT/dt over (t_min, temperature) samples.
+
+    A two-point endpoint slope over a short window is dominated by sensor
+    noise; regressing the whole window averages the noise out. Display only —
+    no decision is ever gated on it.
+    """
+    n = len(history)
+    if n < MIN_SLOPE_SAMPLES:
         return None
-    t0, y0 = history[0]
-    t1, y1 = history[-1]
-    dt = t1 - t0
-    if abs(dt) < 1e-9:
+    mean_t = sum(x for x, _ in history) / n
+    mean_y = sum(y for _, y in history) / n
+    sxx = sum((x - mean_t) ** 2 for x, _ in history)
+    if sxx < 1e-12:
         return None
-    return (y1 - y0) / dt
+    sxy = sum((x - mean_t) * (y - mean_y) for x, y in history)
+    return sxy / sxx
 
 
 def mkt_c(temps_c: list[float]) -> float | None:

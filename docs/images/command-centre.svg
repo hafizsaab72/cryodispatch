@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-label="Command centre layout: header demo buttons, floor map, gauge, alert rail">
+  <rect width="920" height="420" rx="16" fill="#04151c"/>
+  <text x="24" y="28" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">What you will see at localhost:5173</text>
+
+  <!-- chrome -->
+  <rect x="20" y="40" width="880" height="360" rx="10" fill="#0b2430" stroke="#1c4654"/>
+
+  <!-- header -->
+  <rect x="20" y="40" width="880" height="56" rx="10" fill="#08202a"/>
+  <rect x="20" y="80" width="880" height="16" fill="#08202a"/>
+  <text x="36" y="62" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9" letter-spacing="2">ELCIA EMC</text>
+  <text x="36" y="82" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="13" font-weight="600">CryoDispatch ù Command Center</text>
+
+  <rect x="430" y="56" width="86" height="24" rx="4" fill="#04151c" stroke="#1c4654"/>
+  <text x="440" y="72" fill="#d7f3f2" font-family="ui-monospace, Menlo, monospace" font-size="9">Kill probe</text>
+  <rect x="522" y="56" width="118" height="24" rx="4" fill="#04151c" stroke="#e07a3d"/>
+  <text x="532" y="72" fill="#e07a3d" font-family="ui-monospace, Menlo, monospace" font-size="9">Compressor fail</text>
+  <rect x="646" y="56" width="100" height="24" rx="4" fill="#04151c" stroke="#1c4654"/>
+  <text x="656" y="72" fill="#d7f3f2" font-family="ui-monospace, Menlo, monospace" font-size="9">Second vault</text>
+  <rect x="752" y="56" width="92" height="24" rx="4" fill="#04151c" stroke="#1c4654"/>
+  <text x="762" y="72" fill="#d7f3f2" font-family="ui-monospace, Menlo, monospace" font-size="9">Reset plant</text>
+  <text x="850" y="72" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="8">demo</text>
+
+  <!-- map pane -->
+  <rect x="32" y="108" width="380" height="276" rx="8" fill="#04151c" stroke="#1c4654"/>
+  <text x="44" y="128" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="10" letter-spacing="1.5">FLOOR MAP</text>
+  <rect x="48" y="142" width="348" height="68" rx="4" fill="#0b2430"/>
+  <text x="56" y="160" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="9">L2  BLOOD BANK</text>
+  <circle cx="88" cy="182" r="6" fill="#2ec4b6"/>
+  <circle cx="128" cy="178" r="6" fill="#e07a3d"/>
+  <text x="140" y="182" fill="#e07a3d" font-family="ui-monospace, Menlo, monospace" font-size="9">FB04  4.1ùC</text>
+  <circle cx="260" cy="186" r="6" fill="#2ec4b6"/>
+  <rect x="48" y="218" width="348" height="68" rx="4" fill="#0b2430"/>
+  <text x="56" y="236" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="9">L1  PHARMACY / ICU</text>
+  <circle cx="88" cy="258" r="6" fill="#2ec4b6"/>
+  <circle cx="160" cy="262" r="6" fill="#2ec4b6"/>
+  <circle cx="230" cy="254" r="6" fill="#2ec4b6"/>
+  <rect x="48" y="294" width="348" height="76" rx="4" fill="#0b2430"/>
+  <text x="56" y="312" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="9">G   WALK-IN / CARTS</text>
+  <circle cx="88" cy="340" r="6" fill="#2ec4b6"/>
+  <circle cx="200" cy="336" r="6" fill="#7fa3ad"/>
+  <text x="56" y="368" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">Click a vault to load the gauge.</text>
+
+  <!-- gauge pane -->
+  <rect x="424" y="108" width="232" height="276" rx="8" fill="#04151c" stroke="#1c4654"/>
+  <text x="436" y="128" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="10" letter-spacing="1.5">GAUGE</text>
+  <text x="436" y="152" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="13" font-weight="600">FREEZER_BLOOD_04</text>
+  <text x="436" y="172" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="11">air 4.1 ùC ù still in band</text>
+  <circle cx="540" cy="248" r="52" fill="none" stroke="#1c4654" stroke-width="10"/>
+  <path d="M500 280 A52 52 0 1 1 580 280" fill="none" stroke="#e07a3d" stroke-width="10" stroke-linecap="round"/>
+  <text x="512" y="246" fill="#e07a3d" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="18" font-weight="700">1.4</text>
+  <text x="508" y="264" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="10">min to breach</text>
+  <rect x="448" y="330" width="100" height="20" rx="10" fill="#0b2430" stroke="#2ec4b6"/>
+  <text x="458" y="344" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9">AIR IN BAND</text>
+  <text x="436" y="368" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">Countdown starts before air fails.</text>
+
+  <!-- rail pane -->
+  <rect x="668" y="108" width="216" height="276" rx="8" fill="#04151c" stroke="#1c4654"/>
+  <text x="680" y="128" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="10" letter-spacing="1.5">ALERT RAIL</text>
+  <rect x="680" y="144" width="192" height="72" rx="6" fill="#0b2430" stroke="#e07a3d"/>
+  <text x="692" y="164" fill="#e07a3d" font-family="ui-monospace, Menlo, monospace" font-size="10">THERMAL ù FB04</text>
+  <text x="692" y="182" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">MOVE 4 bags ù FB03</text>
+  <text x="692" y="200" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="10">Nurse Rao ù download PDF</text>
+  <rect x="680" y="228" width="192" height="56" rx="6" fill="#0b2430" stroke="#1c4654"/>
+  <text x="692" y="250" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="10">TICKET ù ILR_VAX_02</text>
+  <text x="692" y="268" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">Probe dead ù stock stays</text>
+  <text x="680" y="368" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">Missions and tickets land here.</text>
+</svg>

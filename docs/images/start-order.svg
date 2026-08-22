@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 220" role="img" aria-label="Start order: plant, then command centre, then staff">
+  <rect width="920" height="220" rx="16" fill="#04151c"/>
+
+  <rect x="24" y="36" width="248" height="148" rx="12" fill="#0b2430" stroke="#2ec4b6"/>
+  <circle cx="52" cy="64" r="14" fill="#2ec4b6"/>
+  <text x="48" y="69" fill="#04151c" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="16" font-weight="700">1</text>
+  <text x="76" y="70" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="18" font-weight="600">Plant</text>
+  <text x="40" y="108" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="12">python -m sim</text>
+  <text x="40" y="132" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="13">http://0.0.0.0:8787</text>
+  <text x="40" y="160" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Table ticking · JSON at /api/state</text>
+
+  <path d="M284 110 L328 110" stroke="#2ec4b6" stroke-width="2" fill="none"/>
+  <polygon points="328,104 340,110 328,116" fill="#2ec4b6"/>
+
+  <rect x="348" y="36" width="248" height="148" rx="12" fill="#0b2430" stroke="#1c4654"/>
+  <circle cx="376" cy="64" r="14" fill="#2ec4b6"/>
+  <text x="372" y="69" fill="#04151c" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="16" font-weight="700">2</text>
+  <text x="400" y="70" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="18" font-weight="600">Command centre</text>
+  <text x="364" y="108" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="12">pnpm dev:web</text>
+  <text x="364" y="132" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="13">http://localhost:5173</text>
+  <text x="364" y="160" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">3-floor map, not Connecting&</text>
+
+  <path d="M608 110 L652 110" stroke="#1c4654" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <polygon points="652,104 664,110 652,116" fill="#1c4654"/>
+
+  <rect x="672" y="36" width="224" height="148" rx="12" fill="#0b2430" stroke="#1c4654" stroke-dasharray="5 4"/>
+  <circle cx="700" cy="64" r="14" fill="#0b2430" stroke="#2ec4b6"/>
+  <text x="696" y="69" fill="#2ec4b6" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="16" font-weight="700">3</text>
+  <text x="724" y="70" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="18" font-weight="600">Staff</text>
+  <text x="688" y="108" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="12">pnpm dev:staff</text>
+  <text x="688" y="132" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="13">Expo Go · LAN IP</text>
+  <text x="688" y="160" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Optional · skip on laptop</text>
+</svg>

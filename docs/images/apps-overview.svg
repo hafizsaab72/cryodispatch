@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 320" role="img" aria-label="Three CryoDispatch apps: plant, command centre, staff">
+  <rect width="920" height="320" rx="16" fill="#04151c"/>
+  <!-- Plant -->
+  <rect x="20" y="20" width="280" height="280" rx="12" fill="#0b2430" stroke="#1c4654"/>
+  <text x="40" y="52" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="11" letter-spacing="2">APPS/SIM · :8787</text>
+  <text x="40" y="80" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="20" font-weight="600">Plant</text>
+  <text x="40" y="104" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Brain. Start this first.</text>
+  <rect x="40" y="124" width="240" height="118" rx="8" fill="#04151c" stroke="#1c4654"/>
+  <text x="52" y="146" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="10">ASSET                 °C</text>
+  <text x="52" y="168" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="11">FREEZER_BLOOD_04     4.1</text>
+  <text x="52" y="188" fill="#d7f3f2" font-family="ui-monospace, Menlo, monospace" font-size="11">ILR_VAX_02           5.4</text>
+  <text x="52" y="208" fill="#d7f3f2" font-family="ui-monospace, Menlo, monospace" font-size="11">WALKIN_COLD_01       3.8</text>
+  <text x="52" y="228" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="11">&24 assets ticking</text>
+  <text x="40" y="270" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Predicts · dispatches · proves</text>
+
+  <!-- Command centre -->
+  <rect x="320" y="20" width="280" height="280" rx="12" fill="#0b2430" stroke="#1c4654"/>
+  <text x="340" y="52" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="11" letter-spacing="2">APPS/WEB · :5173</text>
+  <text x="340" y="80" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="20" font-weight="600">Command centre</text>
+  <text x="340" y="104" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Hospital wall display.</text>
+  <rect x="340" y="124" width="240" height="118" rx="8" fill="#04151c" stroke="#1c4654"/>
+  <rect x="352" y="138" width="88" height="90" rx="4" fill="#0b2430" stroke="#2ec4b6"/>
+  <circle cx="374" cy="168" r="5" fill="#2ec4b6"/>
+  <circle cx="400" cy="186" r="5" fill="#e07a3d"/>
+  <circle cx="418" cy="158" r="5" fill="#2ec4b6"/>
+  <text x="360" y="236" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="9">MAP</text>
+  <rect x="448" y="138" width="56" height="90" rx="4" fill="#0b2430" stroke="#1c4654"/>
+  <text x="456" y="188" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9">GAUGE</text>
+  <rect x="512" y="138" width="56" height="90" rx="4" fill="#0b2430" stroke="#1c4654"/>
+  <text x="522" y="188" fill="#e07a3d" font-family="ui-monospace, Menlo, monospace" font-size="9">RAIL</text>
+  <text x="340" y="270" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Map · gauge · alerts · PDF</text>
+
+  <!-- Staff -->
+  <rect x="620" y="20" width="280" height="280" rx="12" fill="#0b2430" stroke="#1c4654"/>
+  <text x="640" y="52" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="11" letter-spacing="2">APPS/STAFF · EXPO GO</text>
+  <text x="640" y="80" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="20" font-weight="600">Staff app</text>
+  <text x="640" y="104" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Nurse phone. Optional.</text>
+  <rect x="710" y="124" width="100" height="118" rx="12" fill="#04151c" stroke="#1c4654"/>
+  <rect x="722" y="136" width="76" height="14" rx="3" fill="#0b2430"/>
+  <rect x="722" y="156" width="76" height="28" rx="4" fill="#0b2430" stroke="#2ec4b6"/>
+  <text x="732" y="174" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9">MOVE</text>
+  <rect x="722" y="192" width="76" height="18" rx="4" fill="#2ec4b6"/>
+  <text x="728" y="205" fill="#04151c" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="8" font-weight="600">ACCEPT</text>
+  <text x="640" y="270" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">Inbox ’ accept ’ QR scan</text>
+</svg>

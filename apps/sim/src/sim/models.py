@@ -30,6 +30,8 @@ class Processed(BaseModel):
     dT_dt_c_per_min: float | None = None
     predicted_T_60s_c: float | None = None
     breach_threshold_c: float | None = None
+    # Which rail the countdown is actually running to: "heat" | "freeze" | "none".
+    breach_direction: str = "none"
     model_mode: str = "stable"
     confidence: float = 0.4
     fault_class: str = "NONE"

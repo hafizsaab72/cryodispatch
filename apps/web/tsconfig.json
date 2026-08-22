@@ -11,8 +11,7 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "strict": true,
-    "paths": { "@/*": ["./src/*"] }
+    "strict": true
   },
   "include": ["src"]
 }
