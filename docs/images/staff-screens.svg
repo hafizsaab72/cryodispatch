@@ -1,49 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" role="img" aria-label="Staff app three screens: inbox, accept move, QR scan">
   <rect width="920" height="360" rx="16" fill="#04151c"/>
-  <text x="24" y="28" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">What you will see in Expo Go</text>
+  <text x="24" y="28" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="12">What you will see in Expo Go</text>
 
-  <!-- phone 1 inbox -->
   <rect x="80" y="48" width="180" height="280" rx="22" fill="#0b2430" stroke="#1c4654"/>
   <rect x="150" y="58" width="40" height="8" rx="4" fill="#04151c"/>
   <text x="100" y="90" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9" letter-spacing="1.5">INBOX</text>
-  <text x="100" y="112" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="14" font-weight="600">Open MOVEs</text>
+  <text x="100" y="112" fill="#d7f3f2" font-family="system-ui, sans-serif" font-size="14" font-weight="600">Open MOVEs</text>
   <rect x="100" y="128" width="140" height="54" rx="8" fill="#04151c" stroke="#2ec4b6"/>
   <text x="110" y="148" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9">M-104</text>
-  <text x="110" y="166" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">FB04 ’ FB03</text>
+  <text x="110" y="166" fill="#d7f3f2" font-family="system-ui, sans-serif" font-size="11">FB04 to FB03</text>
   <text x="100" y="206" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="8">PLANT</text>
   <text x="100" y="222" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="8">http://192.168.1.12:8787</text>
-  <text x="100" y="300" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="10">URL on screen = the tell</text>
-  <text x="140" y="348" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">1 · Inbox</text>
+  <text x="100" y="300" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="10">URL on screen = the tell</text>
+  <text x="140" y="348" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="12">1  Inbox</text>
 
   <path d="M278 180 L318 180" stroke="#2ec4b6" stroke-width="2" fill="none"/>
   <polygon points="318,174 330,180 318,186" fill="#2ec4b6"/>
 
-  <!-- phone 2 accept -->
   <rect x="350" y="48" width="180" height="280" rx="22" fill="#0b2430" stroke="#1c4654"/>
   <rect x="420" y="58" width="40" height="8" rx="4" fill="#04151c"/>
   <text x="370" y="90" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9" letter-spacing="1.5">MISSION</text>
-  <text x="370" y="112" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="14" font-weight="600">Locked plan</text>
-  <text x="370" y="140" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">From  RBC Vault 4</text>
-  <text x="370" y="158" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">To    RBC Vault 3</text>
-  <text x="370" y="176" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11">Nurse Rao · 4 bags</text>
+  <text x="370" y="112" fill="#d7f3f2" font-family="system-ui, sans-serif" font-size="14" font-weight="600">Locked plan</text>
+  <text x="370" y="140" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="11">From  RBC Vault 4</text>
+  <text x="370" y="158" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="11">To    RBC Vault 3</text>
+  <text x="370" y="176" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="11">Nurse Rao, 4 bags</text>
   <rect x="370" y="200" width="140" height="36" rx="8" fill="#2ec4b6"/>
-  <text x="392" y="223" fill="#04151c" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12" font-weight="700">ACCEPT MOVE</text>
-  <text x="370" y="300" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="10">Plan does not change after this</text>
-  <text x="400" y="348" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">2 · Accept</text>
+  <text x="392" y="223" fill="#04151c" font-family="system-ui, sans-serif" font-size="12" font-weight="700">ACCEPT MOVE</text>
+  <text x="370" y="300" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="10">Plan does not change after this</text>
+  <text x="400" y="348" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="12">2  Accept</text>
 
   <path d="M548 180 L588 180" stroke="#2ec4b6" stroke-width="2" fill="none"/>
   <polygon points="588,174 600,180 588,186" fill="#2ec4b6"/>
 
-  <!-- phone 3 scan -->
   <rect x="620" y="48" width="180" height="280" rx="22" fill="#0b2430" stroke="#1c4654"/>
   <rect x="690" y="58" width="40" height="8" rx="4" fill="#04151c"/>
   <text x="640" y="90" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9" letter-spacing="1.5">SCAN</text>
-  <text x="640" y="112" fill="#d7f3f2" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="14" font-weight="600">Custody</text>
+  <text x="640" y="112" fill="#d7f3f2" font-family="system-ui, sans-serif" font-size="14" font-weight="600">Custody</text>
   <rect x="650" y="128" width="120" height="90" rx="8" fill="#04151c" stroke="#2ec4b6" stroke-dasharray="4 3"/>
   <text x="678" y="178" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="10">QR / TYPE</text>
   <text x="640" y="238" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="9">1 UNIT:BAG-ONEG-01</text>
   <text x="640" y="254" fill="#7fa3ad" font-family="ui-monospace, Menlo, monospace" font-size="9">2 VAULT:FREEZER_BLOOD_04</text>
   <text x="640" y="270" fill="#2ec4b6" font-family="ui-monospace, Menlo, monospace" font-size="9">3 VAULT:FREEZER_BLOOD_03</text>
-  <text x="640" y="300" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="10">Wrong vault = red REJECTED</text>
-  <text x="678" y="348" fill="#7fa3ad" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12">3 · Scan</text>
+  <text x="640" y="300" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="10">Wrong vault = red REJECTED</text>
+  <text x="678" y="348" fill="#7fa3ad" font-family="system-ui, sans-serif" font-size="12">3  Scan</text>
 </svg>
