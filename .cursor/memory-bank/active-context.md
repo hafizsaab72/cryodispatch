@@ -1,7 +1,8 @@
 # Active context
 
-**Repo:** `github.com/hafizsaab72/cryodispatch` (private, `main`). Every fix below is
-**uncommitted working-tree change** — the user commits manually.
+**Repo:** `github.com/hafizsaab72/cryodispatch` (public, `main`).
+GitHub Pages serves `docs/` at https://hafizsaab72.github.io/cryodispatch/
+(`docs/index.html` redirects to `how-to-run.html`).
 
 ## This session (23 Aug, run guide)
 

@@ -22,7 +22,8 @@ verify custody by QR → open a compressor ticket.
 
 ## Run
 
-Illustrated walkthrough: `docs/how-to-run.md` / `docs/how-to-run.html`.
+Illustrated walkthrough: `docs/how-to-run.md` / `docs/how-to-run.html`
+(live: https://hafizsaab72.github.io/cryodispatch/).
 
 ```bash
 cd apps/sim && .venv/bin/python -m sim          # plant first

@@ -41,7 +41,7 @@ Every completed move produces a nine-field "Chain of Cold Custody" PDF.
 
 ## Run it
 
-Illustrated walkthrough: [docs/how-to-run.md](docs/how-to-run.md) · [open in a browser](docs/how-to-run.html).
+Illustrated walkthrough: [docs/how-to-run.md](docs/how-to-run.md) · [open in a browser](docs/how-to-run.html) · [live on GitHub Pages](https://hafizsaab72.github.io/cryodispatch/).
 
 Requires Python ≥ 3.12 (the checked-out venv is 3.14), Node 20+, and pnpm 10.
 
