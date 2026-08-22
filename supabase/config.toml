@@ -1,0 +1,7 @@
+project_id = "REPLACE_WITH_NEW_SUPABASE_PROJECT"
+
+[api]
+enabled = true
+
+[functions.ingest]
+verify_jwt = false

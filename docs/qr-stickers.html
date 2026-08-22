@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CryoDispatch QR stickers</title>
+    <style>
+      body { font-family: "IBM Plex Sans", sans-serif; background: #04151c; color: #d7f3f2; margin: 24px; }
+      h1 { color: #2ec4b6; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .grid { display: grid; grid-template-columns: repeat(3, 220px); gap: 20px; }
+      .card { background: #0b2430; border: 1px solid #1c4654; border-radius: 12px; padding: 12px; text-align: center; page-break-inside: avoid; }
+      .card img { background: white; padding: 8px; border-radius: 8px; }
+      code { font-size: 11px; color: #7fa3ad; }
+      @media print { body { background: white; color: black; } .card { border-color: #333; } }
+    </style>
+  </head>
+  <body>
+    <h1>CryoDispatch · print these three + one wrong vault</h1>
+    <p>Scan order: unit → source vault → dest vault. The wrong dest is the wow.</p>
+    <div class="grid" id="grid"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script>
+      const items = [
+        ["UNIT", "UNIT:BAG-ONEG-01", "O-neg bag"],
+        ["SOURCE", "VAULT:FREEZER_BLOOD_04", "Vault 4 (V3)"],
+        ["DEST", "VAULT:FREEZER_BLOOD_03", "Vault 3 backup (V7)"],
+        ["WRONG", "VAULT:WALKIN_COLD_01", "Wrong vault — expect red"],
+        ["DEST2", "VAULT:WALKIN_COLD_02", "Cascade overflow (V8)"],
+        ["UNIT2", "UNIT:BAG-BPOS-01", "B-pos (second fail)"],
+      ];
+      const grid = document.getElementById("grid");
+      for (const [kind, payload, label] of items) {
+        const card = document.createElement("div");
+        card.className = "card";
+        const canvas = document.createElement("canvas");
+        new QRious({ element: canvas, value: payload, size: 180 });
+        card.innerHTML = `<strong>${kind}</strong><div>${label}</div>`;
+        card.appendChild(canvas);
+        const code = document.createElement("code");
+        code.textContent = payload;
+        card.appendChild(document.createElement("br"));
+        card.appendChild(code);
+        grid.appendChild(card);
+      }
+    </script>
+  </body>
+</html>

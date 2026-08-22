@@ -1,0 +1,15 @@
+{
+  "name": "cryodispatch",
+  "private": true,
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @cryodispatch/web dev",
+    "dev:staff": "pnpm --filter @cryodispatch/staff start",
+    "build:web": "pnpm --filter @cryodispatch/web build",
+    "typecheck": "pnpm --filter @cryodispatch/web typecheck && pnpm --filter @cryodispatch/shared typecheck",
+    "sim": "cd apps/sim && .venv/bin/python -m sim"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

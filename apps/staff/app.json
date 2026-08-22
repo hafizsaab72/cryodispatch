@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "CryoDispatch Staff",
+    "slug": "cryodispatch-staff",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "cryodispatch",
+    "userInterfaceStyle": "dark",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "in.elcia.cryodispatch.staff" },
+    "android": { "package": "in.elcia.cryodispatch.staff" },
+    "plugins": [
+      [
+        "expo-router",
+        { "root": "src/app" }
+      ],
+      [
+        "expo-camera",
+        { "cameraPermission": "Scan unit and vault QR codes to prove chain of custody." }
+      ]
+    ],
+    "experiments": { "typedRoutes": true }
+  }
+}
