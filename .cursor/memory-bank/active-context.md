@@ -4,7 +4,11 @@
 GitHub Pages serves `docs/` at https://hafizsaab72.github.io/cryodispatch/
 (`docs/index.html` redirects to `how-to-run.html`).
 
-## This session (23 Aug, run guide)
+## This session (23 Aug, GitHub Pages)
+
+Repo is public. Pages source is `main` / `docs`. Site root redirects to the run guide.
+
+## Prior (23 Aug, run guide)
 
 Added an illustrated first-run walkthrough — `docs/how-to-run.md`, offline twin
 `docs/how-to-run.html`, SVGs in `docs/images/`, and a pointer from the README **Run it**
