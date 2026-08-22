@@ -20,6 +20,7 @@ if str(_SRC) not in sys.path:
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 load_dotenv()
 
+from sim.cloud import Cloud  # noqa: E402
 from sim.plant import Plant  # noqa: E402
 from sim.server import app, plant as SERVER_PLANT  # noqa: E402
 
@@ -44,8 +45,6 @@ def _table(plant: Plant) -> Table:
 
 
 def _loop(plant: Plant, stop: threading.Event, tick_sec: float) -> None:
-    ingest_url = os.getenv("INGEST_URL")
-    ingest_key = os.getenv("INGEST_KEY", "")
     mqtt_host = os.getenv("MQTT_HOST")
     client = None
     if mqtt_host:
@@ -62,27 +61,27 @@ def _loop(plant: Plant, stop: threading.Event, tick_sec: float) -> None:
             Console().print(f"[yellow]MQTT skipped:[/yellow] {exc}")
             client = None
 
-    httpx = None
-    if ingest_url:
-        import httpx as _httpx
-
-        httpx = _httpx.Client(timeout=2.0)
+    cloud = None
+    try:
+        cloud = Cloud.from_env()
+    except Exception as exc:  # noqa: BLE001
+        Console().print(f"[yellow]Supabase skipped:[/yellow] {exc}")
+    if cloud:
+        Console().print("[cyan]Supabase publisher on[/cyan] — plant remains the decision engine")
 
     while not stop.is_set():
         try:
+            if cloud:
+                try:
+                    cloud.drain(plant)
+                except Exception as exc:  # noqa: BLE001
+                    Console().print(f"[yellow]cloud drain:[/yellow] {exc}")
             plant.step()
-            if httpx and ingest_url:
-                for a in plant.assets.values():
-                    if not a.spec.thermal:
-                        continue
-                    try:
-                        httpx.post(
-                            ingest_url,
-                            json=plant.telemetry_of(a).model_dump(),
-                            headers={"Authorization": f"Bearer {ingest_key}"} if ingest_key else {},
-                        )
-                    except Exception:
-                        pass
+            if cloud:
+                try:
+                    cloud.publish(plant)
+                except Exception as exc:  # noqa: BLE001
+                    Console().print(f"[yellow]cloud publish:[/yellow] {exc}")
             if client:
                 for a in plant.assets.values():
                     try:

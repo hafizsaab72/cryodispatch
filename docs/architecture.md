@@ -22,8 +22,9 @@ rules are load-bearing, and why the boring choices were made.
                         custody PDF (jsPDF, in browser)           POST /accept, POST /scan
 ```
 
-Every box above is one process on one laptop plus one phone on the same LAN. There is no broker,
-no cloud dependency, and no database in the live path.
+Every box above is one process on one laptop plus one phone on the same LAN. There is no broker
+and no cloud dependency on the **summit default** path. Supabase is an optional internet fan-out
+that stores what the plant already decided; it is not a second brain.
 
 ## Where the rules live
 
@@ -39,6 +40,7 @@ substitutable behind an ESP32, and it is how real SCADA is wired.
 | Routing: distance, band compatibility, certification, kWh, cascade risk | `apps/sim/src/sim/dispatch.py` |
 | State machine: stepping, alerts, missions, custody, audit, reset | `apps/sim/src/sim/plant.py` |
 | HTTP surface and SSE fan-out | `apps/sim/src/sim/server.py` |
+| Optional PostgREST publisher + intent drain | `apps/sim/src/sim/cloud.py` |
 | Wire types shared with the web app | `packages/shared/src/index.ts` |
 
 ## HTTP surface
@@ -122,18 +124,36 @@ real deployment separates the device bus from the operations plane.
 
 ## How the Supabase path relates
 
-`supabase/` is the deployment story: migrations for `asset_state`, `telemetry`, `alerts`,
-`missions`, `audit_events`, `inventory` and `staff`, plus a Deno `ingest` Edge Function that
-accepts the identical payload and would let Supabase Realtime replace SSE.
+Dedicated project `cefhoczywrycsbniywus` (`ap-south-1`). Do not link this repo to Lensora
+(`eqexoblnsbewvfunqxky`) or onthetab.
 
-It is **not** used by the demo and it is **not** at parity. `supabase/functions/ingest/index.ts`
-diverges from the Python plant on the risk formula (no efficacy term), MKT (single-sample, not
-windowed), backup selection (a hardcoded `backupFor()` map that sends `FREEZER_BLOOD_05` to
-`WALKIN_COLD_02`, where the Python router computes `FREEZER_BLOOD_06`), history write frequency,
-and mission payloads (`units: []`). Treat any behaviour observed there as unverified.
+```
+  plant  --service role, after lock drops-->  Postgres (full lists + custody_documents)
+  web/staff --anon SELECT + Realtime-->  same tables
+  web/staff --anon-->  Edge Function intent --> plant_intents
+  plant tick: drain pending intents → step() → publish
+```
+
+Rules:
+
+- All decisions stay in `apps/sim`. The intent function only inserts rows.
+- `functions/ingest` returns **410**. ESP32 stays on plant `POST /ingest`.
+- Cloud sync writes **full** in-memory lists, not the truncated `snapshot()` (40/20/20/40).
+- Reset is **delete-then-insert** for alerts/missions/tickets/custody so the next judge does not
+  see ghost MOVEs. `tick` is not zeroed.
+- Network I/O never runs inside `Plant._lock`. Telemetry appends sparsely (~15 s or on anomaly).
+- Anon is SELECT only. Service role writes. Never put the service role in `VITE_*` / `EXPO_PUBLIC_*`.
+- Clients use this path only when `VITE_SUPABASE_*` / `EXPO_PUBLIC_SUPABASE_*` are set. Unset →
+  today’s SSE / `EXPO_PUBLIC_PLANT_URL` LAN path (the summit default).
+- Do not restart the plant mid-judge: `_active_alerts` is process memory and a restart can
+  re-raise the same alerts.
+
+Venue Wi-Fi must not be able to kill the demo. Rehearse Accept/scan lag: LAN already waits up to
+one tick; Supabase adds intent-poll lag — pause after Compressor fail before handing the phone.
 
 ## Hardware drop-in
 
-`docs/firmware/cryodispatch_esp32.ino` posts the same JSON to `/ingest`. On a failed DHT22 read it
-sends `temperature: null` and `probe_online: false` rather than inventing a plausible number —
+`docs/firmware/cryodispatch_esp32.ino` posts the same JSON to the plant `/ingest` on `:8787`.
+Do not point it at `functions/v1/ingest` (410). On a failed DHT22 read it sends
+`temperature: null` and `probe_online: false` rather than inventing a plausible number —
 which is precisely the input that must produce a ticket instead of an evacuation.

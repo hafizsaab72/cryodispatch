@@ -33,8 +33,9 @@ Run these from `apps/sim`, against the already-running plant (they POST to `/api
 
 - **Phone cannot reach the plant** — the inbox prints the URL it is using. Re-launch with `EXPO_PUBLIC_PLANT_URL=http://<laptop-LAN-IP>:8787`. Tether the phone to the laptop hotspot rather than venue Wi-Fi.
 - **Wrong sticker rejected unexpectedly** — the scan screen always shows the live source and destination. Read it off the phone; do not trust the printed label.
-- **Everything is dirty** — Reset plant, or restart `.venv/bin/python -m sim`. Nothing is persisted.
-- Venue Wi-Fi is never required: the plant, the web app, and the phone all talk over the LAN.
+- **Everything is dirty** — **Reset plant** in the header. Do not restart the plant process mid-judge: alert dedup lives in memory and a restart can re-raise the same tickets. Cloud tables (if enabled) are a copy of this process, not a second brain.
+- Venue Wi-Fi is never required. Leave `VITE_SUPABASE_*` and `EXPO_PUBLIC_SUPABASE_*` unset so the wall and phone stay on the laptop LAN.
+- If you did opt into Realtime, pause after **Compressor fail** before handing the phone — Accept waits on the next plant tick.
 
 ## If a judge pushes
 
@@ -47,3 +48,5 @@ Run these from `apps/sim`, against the already-running plant (they POST to `/api
 - *"Is that real MQTT?"* — Only `telemetry` is published, and only when `MQTT_HOST` is set. The
   rest of `docs/mqtt-schema.md` is a hardware contract. The live path is HTTP on the LAN, on
   purpose.
+- *"Is this on the cloud?"* — Optional. The summit path is the laptop LAN. Supabase stores what
+  the plant already decided; it does not classify faults or pick `FREEZER_BLOOD_06`.

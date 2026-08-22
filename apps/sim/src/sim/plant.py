@@ -130,6 +130,8 @@ class Plant:
         # missions, inventory and reserved litres. Re-entrant because these
         # entry points call one another (step -> snapshot, anomaly -> reset).
         self._lock = threading.RLock()
+        # Set when _reset_all runs so the cloud publisher delete-then-inserts.
+        self._cloud_reset = False
         self._recompute_capacity()
 
     # ------------------------------------------------------------------ wiring
@@ -143,6 +145,7 @@ class Plant:
             fn(event)
 
     def snapshot(self) -> dict[str, Any]:
+        """UI snapshot — lists are truncated. Cloud sync uses full_state()."""
         with self._lock:
             return {
                 "site_id": self.site_id,
@@ -156,6 +159,55 @@ class Plant:
                 "staff": self.staff,
                 "audit": list(reversed(self.audit[-40:])),
             }
+
+    def full_state(self) -> dict[str, Any]:
+        """Complete in-memory lists plus custody documents. Safe to publish off-lock."""
+        with self._lock:
+            return self._full_state_locked()
+
+    def _full_state_locked(self) -> dict[str, Any]:
+        docs = [{"mission_id": m["id"], "doc": self._custody_locked(m["id"])} for m in self.missions]
+        return {
+            "site_id": self.site_id,
+            "hospital": self.hospital,
+            "tick": self.tick,
+            "assets": [self._asset_public(a) for a in self.assets.values()],
+            "alerts": list(self.alerts),
+            "missions": [dict(m) for m in self.missions],
+            "tickets": [dict(t) for t in self.tickets],
+            "inventory": [dict(u) for u in self.inventory],
+            "staff": [dict(s) for s in self.staff],
+            "audit": list(self.audit),
+            "custody": docs,
+        }
+
+    def consume_cloud_reset(self) -> bool:
+        with self._lock:
+            flag = self._cloud_reset
+            self._cloud_reset = False
+            return flag
+
+    def apply_intent(self, kind: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        body = payload or {}
+        if kind == "anomaly":
+            return self.anomaly(
+                str(body["asset_id"]), str(body.get("anomaly_kind") or body["kind"])
+            )
+        if kind == "reset":
+            return self.reset_all()
+        if kind == "accept":
+            return self.accept_mission(
+                str(body["mission_id"]), str(body.get("actor") or "nurse-rao")
+            )
+        if kind == "scan":
+            return self.scan_mission(
+                str(body["mission_id"]),
+                str(body["code"]),
+                str(body.get("actor") or "nurse-rao"),
+            )
+        if kind == "ack":
+            return self.ack_alert(str(body["alert_id"]), str(body.get("actor") or "command"))
+        raise ValueError(f"unknown intent {kind!r}")
 
     def _sample_clock(self) -> float:
         """Seconds stamped on a recorded reading.
@@ -443,6 +495,7 @@ class Plant:
         # tick and audit stay: tick is a monotonic clock, audit is append-only.
         # Do not clear them on reset.
         self._audit("command", "plant.reset", "dirty", "clean", "full plant reset for next run")
+        self._cloud_reset = True
         self._emit({"type": "reset", "state": self.snapshot()})
         return {"ok": True, "asset_id": "ALL", "kind": "reset"}
 
@@ -832,6 +885,10 @@ class Plant:
         raise KeyError(alert_id)
 
     def custody(self, mission_id: str) -> dict[str, Any]:
+        with self._lock:
+            return self._custody_locked(mission_id)
+
+    def _custody_locked(self, mission_id: str) -> dict[str, Any]:
         m = self._mission(mission_id)
         src = self.assets[m["from_asset"]]
         dst = self.assets[m["to_asset"]]

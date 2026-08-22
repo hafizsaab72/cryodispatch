@@ -25,6 +25,8 @@ flowchart LR
 
 The browser never talks to the plant’s port directly in local dev — Vite proxies `/api` and `/ingest` to `127.0.0.1:8787`. The phone must use the laptop’s LAN IP; `127.0.0.1` is the phone itself.
 
+This LAN path is the **summit default**. Leave `VITE_SUPABASE_*` and `EXPO_PUBLIC_SUPABASE_*` unset. Venue Wi-Fi must not be able to kill the demo.
+
 ## Prerequisites (once)
 
 - Python ≥ 3.12
@@ -100,12 +102,24 @@ Printable cards: [qr-stickers.html](qr-stickers.html). Full 90-second beat: [dem
 
 | Symptom | Fix |
 | --- | --- |
-| Web stuck on “Connecting to plant…” | Start the plant first (`apps/sim` → `.venv/bin/python -m sim`). |
+| Web stuck on “Connecting to plant…” | Start the plant first (`apps/sim` → `.venv/bin/python -m sim`). If `VITE_SUPABASE_*` is set, either start the plant so it can publish or unset those vars for LAN. |
 | Phone inbox empty / cannot fetch | Inbox URL is the tell. `127.0.0.1` is dead on a physical phone. Set `EXPO_PUBLIC_PLANT_URL` to `http://<LAN-IP>:8787` and stay on the same Wi-Fi. |
 | Camera denied | Type the three codes above. |
 | `npm` warnings or broken Expo resolve | Use **pnpm**, not npm. |
 | Want a clean replay | **Reset plant** in the header, or `--anomaly ALL reset`. |
 
+## Optional: Supabase Realtime (not the summit default)
+
+The plant can publish full state to project `cefhoczywrycsbniywus` (`ap-south-1`) when
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are in the repo-root `.env`. Clients stay on LAN
+unless you also set the **anon** keys (`VITE_SUPABASE_*` for web, `EXPO_PUBLIC_SUPABASE_*` for
+staff). Never put the service role in those client variables. ESP32 still posts to the plant
+`/ingest` — the Edge Function returns 410 and is not a second brain.
+
+If clients are on Realtime, pause after **Compressor fail** before handing the phone (intent
+poll lag). Do not restart the plant mid-judge. See [architecture.md](architecture.md) and
+[supabase/README.md](../supabase/README.md).
+
 ## You do not need
 
-Supabase, MQTT, or the ESP32 firmware. Those are optional extras. The live path is the Python plant plus the two clients on one laptop (and an optional phone).
+Supabase, MQTT, or the ESP32 firmware. Those are optional extras. The live demo path is the Python plant plus the two clients on one laptop (and an optional phone).

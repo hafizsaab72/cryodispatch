@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import { acceptMission, fetchMission, type Mission } from "../../lib/api";
+import { acceptMission, fetchMission, USING_CLOUD, type Mission } from "../../lib/api";
 
 export default function MissionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -104,7 +104,7 @@ export default function MissionScreen() {
           }}
         >
           <Text style={{ color: "#04151c", textAlign: "center", fontWeight: "700", fontSize: 16 }}>
-            {busy ? "Accepting…" : "ACCEPT MOVE"}
+            {busy ? (USING_CLOUD ? "Waiting on plant…" : "Accepting…") : "ACCEPT MOVE"}
           </Text>
         </Pressable>
       ) : (

@@ -9,6 +9,7 @@
     "android": "expo start --android"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
     "expo": "~56.0.12",
     "expo-camera": "~56.0.8",
     "expo-constants": "~56.0.18",

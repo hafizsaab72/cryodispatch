@@ -2,7 +2,7 @@ import { ArrowCounterClockwise, Lightning, Radio, ThermometerCold, Warning } fro
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { PlantState } from "@cryodispatch/shared";
 import { AlertRail } from "./AlertRail";
-import { anomaly, fetchCustody, fetchState, resetPlant, subscribe } from "./api";
+import { anomaly, fetchCustody, fetchState, resetPlant, subscribe, usingCloud } from "./api";
 import { FloorMap } from "./FloorMap";
 import { Gauge } from "./Gauge";
 import { downloadCustodyPdf } from "./pdf";
@@ -13,6 +13,7 @@ export default function App() {
   const [err, setErr] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>("FREEZER_BLOOD_04");
   const [protocol, setProtocol] = useState(true);
+  const [pending, setPending] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -49,6 +50,7 @@ export default function App() {
       live = true;
       stopRetry();
       setState(ev.state);
+      setPending(null);
       setErr(null);
     });
     return () => {
@@ -60,11 +62,13 @@ export default function App() {
 
   const asset = useMemo(() => state?.assets.find((a) => a.asset_id === selected), [state, selected]);
 
-  const run = useCallback(async (fn: () => Promise<unknown>) => {
+  const run = useCallback(async (fn: () => Promise<unknown>, label?: string) => {
     try {
+      if (usingCloud && label) setPending(label);
       await fn();
       setErr(null);
     } catch (e) {
+      setPending(null);
       setErr(e instanceof Error ? e.message : "action failed");
     }
   }, []);
@@ -77,7 +81,11 @@ export default function App() {
   if (!state) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-8">
-        <p className="text-mute text-sm">Connecting to plant…</p>
+        <p className="text-mute text-sm">
+          {usingCloud
+            ? "Connecting to Supabase… start the plant so it can publish, or unset VITE_SUPABASE_* for LAN."
+            : "Connecting to plant…"}
+        </p>
         {err ? (
           <p className="text-hot max-w-md text-center text-sm">
             {err}. In <code className="font-mono">apps/sim</code> run{" "}
@@ -101,22 +109,26 @@ export default function App() {
           <DemoBtn
             icon={<Radio size={16} />}
             label="Kill probe"
-            onClick={() => run(() => anomaly("ILR_VAX_02", "lwt"))}
+            onClick={() => run(() => anomaly("ILR_VAX_02", "lwt"), "Kill probe")}
+            disabled={Boolean(pending)}
           />
           <DemoBtn
             icon={<ThermometerCold size={16} />}
             label="Compressor fail"
-            onClick={() => run(() => anomaly("FREEZER_BLOOD_04", "compressor"))}
+            onClick={() => run(() => anomaly("FREEZER_BLOOD_04", "compressor"), "Compressor fail")}
+            disabled={Boolean(pending)}
           />
           <DemoBtn
             icon={<Warning size={16} />}
             label="Second vault"
-            onClick={() => run(() => anomaly("FREEZER_BLOOD_05", "compressor"))}
+            onClick={() => run(() => anomaly("FREEZER_BLOOD_05", "compressor"), "Second vault")}
+            disabled={Boolean(pending)}
           />
           <DemoBtn
             icon={<ArrowCounterClockwise size={16} />}
             label="Reset plant"
-            onClick={() => run(resetPlant)}
+            onClick={() => run(resetPlant, "Reset plant")}
+            disabled={Boolean(pending)}
           />
           <button
             type="button"
@@ -127,6 +139,11 @@ export default function App() {
           </button>
         </div>
       </header>
+      {pending ? (
+        <div className="border-cyan/40 bg-cyan/10 text-cyan border-b px-4 py-2 font-mono text-xs">
+          Intent queued — waiting for the plant ({pending}). Pause before handing the phone.
+        </div>
+      ) : null}
       {err ? (
         <div className="bg-hot/20 text-hot border-hot/40 border-b px-4 py-2 text-sm">{err}</div>
       ) : null}
@@ -155,16 +172,19 @@ function DemoBtn({
   label,
   onClick,
   icon,
+  disabled,
 }: {
   label: string;
   onClick: () => void;
   icon: ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="border-line bg-panel text-ice hover:border-cyan flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-xs"
+      disabled={disabled}
+      className="border-line bg-panel text-ice hover:border-cyan flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-xs disabled:opacity-40"
     >
       {icon}
       {label}

@@ -1,6 +1,17 @@
--- CryoDispatch plant schema (new project — do not reuse Lensora)
+-- CryoDispatch plant schema for project cefhoczywrycsbniywus (ap-south-1).
+-- Empty project — one clean migration. Do not reuse Lensora.
+-- Anon: SELECT only. Writes go through the service role (plant + intent function).
+-- Column names are snake_case; plant/shared camel fields map at the boundary
+-- (dT_dt_c_per_min -> dt_dt_c_per_min, predicted_T_60s_c -> predicted_t_60s_c).
 
-create table if not exists public.asset_state (
+create table public.plant_meta (
+  site_id text primary key,
+  hospital text not null,
+  tick bigint not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+create table public.asset_state (
   asset_id text primary key,
   asset_class text not null,
   label text,
@@ -15,6 +26,7 @@ create table if not exists public.asset_state (
   map_x double precision,
   map_y double precision,
   topic text,
+  timestamp double precision,
   minutes_to_breach double precision,
   risk_score double precision,
   remaining_efficacy_pct double precision,
@@ -24,24 +36,34 @@ create table if not exists public.asset_state (
   dt_dt_c_per_min double precision,
   predicted_t_60s_c double precision,
   breach_threshold_c double precision,
+  breach_direction text,
   model_mode text,
   confidence double precision,
   fault_class text,
   band_low_c double precision,
   band_high_c double precision,
+  setpoint_c double precision,
+  capacity_l double precision,
+  used_l double precision,
+  reserved_l double precision,
+  free_l double precision,
+  baseline_used_l double precision,
+  sensor_id text,
+  demo_role text,
+  recent_c jsonb not null default '[]',
   updated_at timestamptz default now()
 );
 
-create table if not exists public.telemetry (
+create table public.telemetry (
   id bigint generated always as identity primary key,
   asset_id text not null references public.asset_state (asset_id) on delete cascade,
   payload jsonb not null,
   created_at timestamptz default now()
 );
 
-create index if not exists telemetry_asset_created_idx on public.telemetry (asset_id, created_at desc);
+create index telemetry_asset_created_idx on public.telemetry (asset_id, created_at desc);
 
-create table if not exists public.alerts (
+create table public.alerts (
   id text primary key,
   asset_id text not null,
   kind text not null,
@@ -51,11 +73,27 @@ create table if not exists public.alerts (
   created_at timestamptz default now()
 );
 
-create table if not exists public.missions (
+create table public.tickets (
+  id text primary key,
+  alert_id text,
+  asset_id text not null,
+  kind text not null,
+  duty_cycle double precision,
+  twin_duty_cycle double precision,
+  parts text,
+  sla_min double precision,
+  kwh_hold_30m double precision,
+  kwh_move double precision,
+  created_at timestamptz default now()
+);
+
+create table public.missions (
   id text primary key,
   alert_id text,
   from_asset text not null,
+  from_label text,
   to_asset text not null,
+  to_label text,
   units jsonb not null default '[]',
   staff_id text,
   staff_name text,
@@ -65,10 +103,12 @@ create table if not exists public.missions (
   ticket jsonb,
   scan_step text default 'unit',
   last_reject text,
+  routing jsonb,
+  events jsonb not null default '[]',
   created_at timestamptz default now()
 );
 
-create table if not exists public.audit_events (
+create table public.audit_events (
   id text primary key,
   actor text not null,
   action text not null,
@@ -79,9 +119,10 @@ create table if not exists public.audit_events (
   created_at timestamptz default now()
 );
 
-create table if not exists public.inventory (
+create table public.inventory (
   unit_id text primary key,
   asset_id text not null,
+  home_asset_id text,
   product_name text not null,
   blood_type text,
   lot text,
@@ -90,7 +131,7 @@ create table if not exists public.inventory (
   temp_band text
 );
 
-create table if not exists public.staff (
+create table public.staff (
   id text primary key,
   name text not null,
   cert text not null,
@@ -98,35 +139,79 @@ create table if not exists public.staff (
   busy boolean default false
 );
 
+create table public.custody_documents (
+  mission_id text primary key,
+  doc jsonb not null,
+  updated_at timestamptz default now()
+);
+
+create table public.plant_intents (
+  id uuid primary key default gen_random_uuid(),
+  kind text not null,
+  payload jsonb not null default '{}',
+  status text not null default 'pending',
+  result jsonb,
+  error text,
+  created_at timestamptz default now(),
+  processed_at timestamptz
+);
+
+create index plant_intents_pending_idx on public.plant_intents (created_at)
+  where status = 'pending';
+
 alter table public.asset_state replica identity full;
 alter table public.alerts replica identity full;
 alter table public.missions replica identity full;
+alter table public.tickets replica identity full;
+alter table public.inventory replica identity full;
+alter table public.staff replica identity full;
+alter table public.plant_meta replica identity full;
+alter table public.custody_documents replica identity full;
 alter table public.audit_events replica identity full;
 
 alter publication supabase_realtime add table public.asset_state;
 alter publication supabase_realtime add table public.alerts;
 alter publication supabase_realtime add table public.missions;
+alter publication supabase_realtime add table public.tickets;
+alter publication supabase_realtime add table public.inventory;
+alter publication supabase_realtime add table public.staff;
+alter publication supabase_realtime add table public.plant_meta;
+alter publication supabase_realtime add table public.custody_documents;
 
--- Demo-open RLS: one plant, one authenticated role. Tighten before any real hospital.
 alter table public.asset_state enable row level security;
 alter table public.telemetry enable row level security;
 alter table public.alerts enable row level security;
+alter table public.tickets enable row level security;
 alter table public.missions enable row level security;
 alter table public.audit_events enable row level security;
 alter table public.inventory enable row level security;
 alter table public.staff enable row level security;
+alter table public.custody_documents enable row level security;
+alter table public.plant_meta enable row level security;
+alter table public.plant_intents enable row level security;
 
-create policy "demo read asset_state" on public.asset_state for select using (true);
-create policy "demo write asset_state" on public.asset_state for all using (true) with check (true);
-create policy "demo read telemetry" on public.telemetry for select using (true);
-create policy "demo write telemetry" on public.telemetry for insert with check (true);
-create policy "demo read alerts" on public.alerts for select using (true);
-create policy "demo write alerts" on public.alerts for all using (true) with check (true);
-create policy "demo read missions" on public.missions for select using (true);
-create policy "demo write missions" on public.missions for all using (true) with check (true);
-create policy "demo read audit" on public.audit_events for select using (true);
-create policy "demo write audit" on public.audit_events for insert with check (true);
-create policy "demo read inventory" on public.inventory for select using (true);
-create policy "demo write inventory" on public.inventory for all using (true) with check (true);
-create policy "demo read staff" on public.staff for select using (true);
-create policy "demo write staff" on public.staff for all using (true) with check (true);
+-- Anon may read the live plant. Writes are service-role only (RLS bypass).
+create policy "anon read asset_state" on public.asset_state for select to anon, authenticated using (true);
+create policy "anon read telemetry" on public.telemetry for select to anon, authenticated using (true);
+create policy "anon read alerts" on public.alerts for select to anon, authenticated using (true);
+create policy "anon read tickets" on public.tickets for select to anon, authenticated using (true);
+create policy "anon read missions" on public.missions for select to anon, authenticated using (true);
+create policy "anon read audit" on public.audit_events for select to anon, authenticated using (true);
+create policy "anon read inventory" on public.inventory for select to anon, authenticated using (true);
+create policy "anon read staff" on public.staff for select to anon, authenticated using (true);
+create policy "anon read custody" on public.custody_documents for select to anon, authenticated using (true);
+create policy "anon read plant_meta" on public.plant_meta for select to anon, authenticated using (true);
+
+grant usage on schema public to anon, authenticated;
+grant select on
+  public.asset_state,
+  public.telemetry,
+  public.alerts,
+  public.tickets,
+  public.missions,
+  public.audit_events,
+  public.inventory,
+  public.staff,
+  public.custody_documents,
+  public.plant_meta
+to anon, authenticated;

@@ -10,13 +10,18 @@ Full narrative is in `docs/architecture.md`. This file is the short list of rule
 - **One JSON payload on HTTP and MQTT.** The HTTP body carries `topic`; an ESP32 is a drop-in
   replacement for the simulator.
 - **HTTP + SSE is the live path;** MQTT is a device contract. A broker must never be able to take
-  the demo down.
+  the demo down. Supabase Realtime is opt-in (`VITE_SUPABASE_*` / `EXPO_PUBLIC_SUPABASE_*`);
+  unset means today’s LAN path.
 - **Upsert latest state, append history sparsely** (every ~15 s or on anomaly), never at 1 Hz.
+  Cloud sync writes **full** lists, not `snapshot()`. Network I/O never runs inside `Plant._lock`.
+  Reset on the cloud path is delete-then-insert.
 - **Greedy dispatch, not a solver.** `cost = 3·distance + 2·staff_eta + (1 − free_frac) +
   2·kwh_move + 4·cascade_risk`. O(vaults) and explainable on stage.
 - **Demo τ is compressed to 2 min** for every cabinet (`DEMO_TAU_MIN`); real cabinets are ~12 min,
   walk-ins ~18. Physics unchanged, clock compressed — say so out loud.
-- Single site, single in-memory process. No persistence, no auth, no multi-tenant RLS.
+- Single site, single in-memory process. Optional PostgREST fan-out to project
+  `cefhoczywrycsbniywus` (ap-south-1). Anon SELECT-only; no hospital-grade RLS. Do not reuse
+  Lensora (`eqexoblnsbewvfunqxky`).
 
 ## Invariants
 

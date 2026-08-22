@@ -36,7 +36,7 @@ Every completed move produces a nine-field "Chain of Cold Custody" PDF.
 | `apps/web` | Command centre (Vite + React): floor map, gauge, alert rail, custody PDF. |
 | `apps/staff` | Staff app (Expo SDK 56, three screens): inbox → accept MOVE → QR scan. |
 | `packages/shared` | TypeScript types shared by web and the plant's JSON contract. |
-| `supabase/` | Postgres migrations plus a Deno `ingest` Edge Function. A second, divergent implementation the demo does not use — see [Honest limitations](#honest-limitations). |
+| `supabase/` | Dedicated project (`cefhoczywrycsbniywus`, `ap-south-1`): Postgres fan-out of plant state plus an `intent` Edge Function. Clients stay on LAN unless `VITE_SUPABASE_*` / `EXPO_PUBLIC_SUPABASE_*` are set. `functions/ingest` is 410 — see [Honest limitations](#honest-limitations). |
 | `docs/` | [How to run](docs/how-to-run.md) ([browser](docs/how-to-run.html)), [architecture](docs/architecture.md), [demo script](docs/demo-script.md), [MQTT contract](docs/mqtt-schema.md), [ESP32 sketch](docs/firmware/cryodispatch_esp32.ino), [printable QR cards](docs/qr-stickers.html), [pitch deck](docs/pitch/). |
 
 ## Run it
@@ -96,7 +96,7 @@ The full 90-second beat is in [docs/demo-script.md](docs/demo-script.md). Print
 ### Tests and checks
 
 ```bash
-cd apps/sim && .venv/bin/pytest -q      # 58 tests
+cd apps/sim && .venv/bin/pytest -q      # 67 tests
 pnpm typecheck                          # web + shared
 pnpm build:web
 ```
@@ -109,14 +109,15 @@ Stated up front, because a discovered limit is worse than a declared one.
   current model, so `minutes_to_freeze` always returns the stable sentinel. "Freeze ≤ 0 °C kills
   alum-adjuvanted vaccines" is a real hazard and is in the pitch, but the plant has no overcool or
   stuck-thermostat stimulus to trigger it.
-- **The Supabase path is unproven and divergent.** `supabase/functions/ingest` re-implements the
-  thermal model in Deno and disagrees with the Python plant on the risk formula, MKT scope, backup
-  selection (it hardcodes `WALKIN_COLD_02` where the Python router computes `FREEZER_BLOOD_06`),
-  history write frequency, and it inserts missions with an empty `units` array. It is a deployment
-  sketch, not a second live path.
+- **Supabase is a fan-out, not a second brain.** Project `cefhoczywrycsbniywus` stores what the
+  Python plant already decided. `functions/ingest` returns 410 so it cannot pick the wrong backup
+  (`WALKIN_COLD_02` vs `FREEZER_BLOOD_06`). Anon is SELECT-only; writes are service-role. RLS is
+  demo-open **read**, not hospital-grade auth. Summit clients stay on LAN unless you opt in.
 - **Only the `telemetry` MQTT topic is published,** and only when `MQTT_HOST` is set. `status`,
   `lwt`, `cmd/…/reroute` and `alerts/…` are a specified hardware contract, not emitted traffic.
-- **Nothing is persisted.** The plant is in-memory; restarting it is the biggest reset there is.
+- **The plant is still in-memory.** Cloud tables are a copy of the running process. Do not restart
+  the plant during a judge run (`_active_alerts` is not persisted and can re-fire). GitHub Pages
+  hosts the run guide only — it does not host the command centre.
 - **No auth, no multi-tenancy, no push notifications.** One site, one process, in-app haptics only.
 - **Not built:** a real ESP32 on the bench with a live MQTT last-will, and a backup screen
   recording of the demo.

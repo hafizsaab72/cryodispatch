@@ -3,7 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import { fetchMission, scanMission, type Mission } from "../lib/api";
+import { fetchMission, scanMission, USING_CLOUD, type Mission } from "../lib/api";
 
 const STEP_HINT: Record<string, string> = {
   unit: "Scan the bag QR",
@@ -108,7 +108,9 @@ export default function ScanScreen() {
           <View style={{ backgroundColor: "#3a1210", borderRadius: 10, padding: 14 }}>
             <Text style={{ color: "#ff6a5a", fontSize: 15 }}>{error}</Text>
             <Text style={{ color: "#ffd9d4", fontSize: 13, marginTop: 6 }}>
-              Set EXPO_PUBLIC_PLANT_URL to the laptop's LAN IP and reload.
+              {USING_CLOUD
+                ? "Start the plant so it can publish, or unset EXPO_PUBLIC_SUPABASE_* to use the LAN."
+                : "Set EXPO_PUBLIC_PLANT_URL to the laptop's LAN IP and reload."}
             </Text>
           </View>
         ) : null}
@@ -150,7 +152,7 @@ export default function ScanScreen() {
           }}
         >
           <Text style={{ color: "#04151c", textAlign: "center", fontWeight: "700", fontSize: 15 }}>
-            {busy ? "Checking…" : "Submit code"}
+            {busy ? (USING_CLOUD ? "Waiting on plant…" : "Checking…") : "Submit code"}
           </Text>
         </Pressable>
       </View>

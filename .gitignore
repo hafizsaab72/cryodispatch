@@ -4,6 +4,9 @@ dist/
 .env
 .env.*
 !.env.example
+.supabase/
+supabase/.temp/
+supabase/.branches/
 .venv/
 venv/
 __pycache__/

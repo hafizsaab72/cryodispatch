@@ -1,7 +1,14 @@
-project_id = "REPLACE_WITH_NEW_SUPABASE_PROJECT"
+project_id = "cefhoczywrycsbniywus"
 
 [api]
 enabled = true
 
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
 [functions.ingest]
+verify_jwt = false
+
+[functions.intent]
 verify_jwt = false

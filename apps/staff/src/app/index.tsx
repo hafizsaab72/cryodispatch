@@ -2,7 +2,7 @@ import { Link } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import { fetchState, PLANT_URL, type Mission } from "../lib/api";
+import { fetchState, PLANT_URL, USING_CLOUD, type Mission } from "../lib/api";
 
 export default function Inbox() {
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -47,13 +47,17 @@ export default function Inbox() {
       }
     >
       <Text style={{ color: "#2ec4b6", fontSize: 13, letterSpacing: 2 }}>STAFF · NURSE RAO</Text>
-      <Text style={{ color: "#5c7f8a", fontSize: 12 }}>{PLANT_URL}</Text>
+      <Text style={{ color: "#5c7f8a", fontSize: 12 }}>
+        {USING_CLOUD ? "Supabase Realtime (plant must be publishing)" : PLANT_URL}
+      </Text>
 
       {err ? (
         <View style={{ backgroundColor: "#3a1210", borderRadius: 10, padding: 14 }}>
           <Text style={{ color: "#ff6a5a", fontSize: 15 }}>{err}</Text>
           <Text style={{ color: "#ffd9d4", fontSize: 13, marginTop: 6 }}>
-            Set EXPO_PUBLIC_PLANT_URL to the laptop's LAN IP and reload.
+            {USING_CLOUD
+              ? "Start the plant so it can publish, or unset EXPO_PUBLIC_SUPABASE_* to use the LAN."
+              : "Set EXPO_PUBLIC_PLANT_URL to the laptop's LAN IP and reload."}
           </Text>
         </View>
       ) : null}

@@ -22,3 +22,8 @@ pnpm --filter @cryodispatch/web build
 
 The header buttons (**Kill probe**, **Compressor fail**, **Second vault**, **Reset plant**) are the
 demo controls; the plant does the deciding. Nothing here classifies a fault or picks a destination.
+
+Leave `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` unset for the summit (SSE via the proxy).
+If both are set, the wall assembles `PlantState` from Realtime table changes and posts intents
+to `functions/v1/intent`. Custody PDFs read `custody_documents` written by the plant. Never put
+the service role in Vite env.

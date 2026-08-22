@@ -9,6 +9,8 @@
  *
  * Wiring: DHT22 data -> GPIO 4, 3V3, GND.
  * Set PLANT_URL to the laptop running `python -m sim` (http://x.x.x.x:8787/ingest).
+ * Do not post at the Supabase ingest function — that path is gone. The plant
+ * decides; Supabase only stores what it already decided.
  *
  * Board: ESP32 DevKit.
  * Libraries: "esp32" by Espressif, "DHT sensor library" (Adafruit) plus its

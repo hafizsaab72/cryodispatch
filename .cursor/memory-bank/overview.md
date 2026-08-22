@@ -17,7 +17,7 @@ verify custody by QR → open a compressor ticket.
 | `apps/web` | Command centre (Vite + React), port 5173, proxies `/api` and `/ingest` to the plant. |
 | `apps/staff` | Expo staff app, three screens (`src/app/index`, `mission/[id]`, `scan`). |
 | `packages/shared` | TypeScript wire types. |
-| `supabase/` | Migrations + Deno `ingest` Edge Function. Divergent, unused by the demo. |
+| `supabase/` | Dedicated project `cefhoczywrycsbniywus` (ap-south-1). Fan-out of plant state; ingest is 410. |
 | `docs/` | `how-to-run.md` + `how-to-run.html` (illustrated first-run), `architecture.md`, `demo-script.md`, `mqtt-schema.md`, `qr-stickers.html`, `firmware/`, `pitch/`. |
 
 ## Run
@@ -29,7 +29,7 @@ Illustrated walkthrough: `docs/how-to-run.md` / `docs/how-to-run.html`
 cd apps/sim && .venv/bin/python -m sim          # plant first
 pnpm dev:web                                    # http://localhost:5173
 EXPO_PUBLIC_PLANT_URL=http://<LAN-IP>:8787 pnpm dev:staff
-cd apps/sim && .venv/bin/pytest -q              # 58 tests
+cd apps/sim && .venv/bin/pytest -q              # 67 tests
 ```
 
 ## Where the rest of this memory bank lives

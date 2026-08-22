@@ -12,6 +12,7 @@
   "dependencies": {
     "@cryodispatch/shared": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",
+    "@supabase/supabase-js": "^2.112.3",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "react": "^19.1.1",

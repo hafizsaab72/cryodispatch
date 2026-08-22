@@ -131,6 +131,8 @@
       <p class="note">
         The browser never talks to the plant’s port directly in local dev.
         The phone must use the laptop’s LAN IP; <code>127.0.0.1</code> is the phone itself.
+        This LAN path is the <strong>summit default</strong> — leave
+        <code>VITE_SUPABASE_*</code> and <code>EXPO_PUBLIC_SUPABASE_*</code> unset.
       </p>
 
       <h2>Prerequisites (once)</h2>
@@ -224,7 +226,7 @@ VAULT:FREEZER_BLOOD_03</pre>
         <tbody>
           <tr>
             <td>Web stuck on “Connecting to plant…”</td>
-            <td>Start the plant first (<code>apps/sim</code> → <code>.venv/bin/python -m sim</code>).</td>
+            <td>Start the plant first (<code>apps/sim</code> → <code>.venv/bin/python -m sim</code>). If <code>VITE_SUPABASE_*</code> is set, either start the plant so it can publish or unset those vars for LAN.</td>
           </tr>
           <tr>
             <td>Phone inbox empty / cannot fetch</td>
@@ -245,10 +247,20 @@ VAULT:FREEZER_BLOOD_03</pre>
         </tbody>
       </table>
 
+      <h2>Optional cloud path</h2>
+      <p class="note">
+        The plant can publish to project <code>cefhoczywrycsbniywus</code> (<code>ap-south-1</code>)
+        when <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code> are set.
+        Clients use Realtime only if you also set the <strong>anon</strong> keys.
+        Never put the service role in <code>VITE_*</code> or <code>EXPO_PUBLIC_*</code>.
+        ESP32 still posts to the plant <code>/ingest</code> (the Edge Function returns 410).
+        If clients are on Realtime, pause after Compressor fail before handing the phone.
+      </p>
+
       <h2>You do not need</h2>
       <p class="note">
         Supabase, MQTT, or the ESP32 firmware. Those are optional extras.
-        The live path is the Python plant plus the two clients on one laptop (and an optional phone).
+        The live demo path is the Python plant plus the two clients on one laptop (and an optional phone).
       </p>
 
       <footer>CryoDispatch · Predict. Dispatch. Prove.</footer>

@@ -10,7 +10,10 @@ EXPO_PUBLIC_PLANT_URL=http://192.168.x.x:8787 pnpm dev:staff
 ```
 
 The inbox prints the plant URL it is using, so a wrong LAN IP is visible rather than silent.
-Default is `http://127.0.0.1:8787`.
+Default is `http://127.0.0.1:8787`. Leave `EXPO_PUBLIC_SUPABASE_*` unset for the summit. If those
+are set, the phone reads missions from Supabase and posts accept/scan as intents; Accept shows
+“Waiting on plant…” until the next publish. Actor remains `nurse-rao`. Never put the service
+role in Expo env.
 
 Without a camera (simulator, or a phone that will not grant permission), type the codes instead:
 `UNIT:BAG-ONEG-01`, then `VAULT:FREEZER_BLOOD_04`, then `VAULT:FREEZER_BLOOD_03`. The printable
